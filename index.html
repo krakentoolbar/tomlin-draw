@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tomlin Draw</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%81%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: one narrow column (phone-first), organizer form on top, generated links below; reveal view is a single centered card. */
+:root{
+  --bg:#f3f6f9;        /* snow with a touch of blue */
+  --card:#ffffff;
+  --fg:#17212b;        /* ink */
+  --muted:#5b6b7a;
+  --line:#d8e0e8;
+  --accent:#b3263c;    /* cranberry */
+  --accent-fg:#ffffff;
+  --pine:#1f5e46;
+  --pine-soft:#e3f0ea;
+  --warn-soft:#fdeaea;
+  --display:'DM Serif Display',Georgia,'Times New Roman',serif;
+  --body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f161d;--card:#182230;--fg:#eef3f7;--muted:#9fb0bf;--line:#2a3745;
+    --accent:#e0506a;--accent-fg:#ffffff;--pine:#6fc49a;--pine-soft:#15302a;--warn-soft:#3a1c22;color-scheme:dark
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f161d;--card:#182230;--fg:#eef3f7;--muted:#9fb0bf;--line:#2a3745;
+  --accent:#e0506a;--accent-fg:#ffffff;--pine:#6fc49a;--pine-soft:#15302a;--warn-soft:#3a1c22;color-scheme:dark
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:24px 48px;
+}
+main{max-width:560px;margin:0 auto}
+h1,h2{font-family:var(--display);font-weight:400;letter-spacing:-.01em;text-wrap:balance;margin:0}
+h1{font-size:2.2rem;line-height:1.1}
+h2{font-size:1.25rem;margin-bottom:10px}
+p{margin:0}
+.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:500}
+.sub{color:var(--muted);margin-top:6px}
+section{margin-top:28px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{min-width:0}
+label.block{display:block;font-weight:500;margin-bottom:6px}
+input[type=text]{
+  width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)
+}
+input[type=text]:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.names{display:flex;flex-direction:column;gap:8px}
+.name-row{display:flex;gap:8px}
+.name-row input{flex:1}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:10px 14px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700;padding:14px 20px;font-size:1.05rem;width:100%}
+button.ghost{background:transparent;border-color:transparent;color:var(--muted);padding:6px 8px}
+button.small{padding:6px 10px;font-size:.9rem}
+button.x{width:42px;padding:0;color:var(--muted)}
+.opt{display:flex;gap:10px;align-items:flex-start;margin-top:10px}
+.opt input{margin-top:5px;accent-color:var(--accent)}
+.hint{font-size:.9rem;color:var(--muted)}
+.err{background:var(--warn-soft);color:var(--accent);padding:10px 12px;border-radius:8px;margin-top:12px;font-size:.95rem}
+.links{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.link{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.link .who{font-weight:700}
+.link .url{font-size:.8rem;color:var(--muted);word-break:break-all;margin-top:4px}
+.link .row{margin-top:8px}
+.pill{display:inline-block;background:var(--pine-soft);color:var(--pine);font-size:.75rem;padding:2px 8px;border-radius:999px;font-weight:500}
+details{margin-top:18px}
+summary{cursor:pointer;color:var(--muted)}
+.matches{margin-top:10px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-variant-numeric:tabular-nums}
+.matches b{font-weight:700}
+textarea{width:100%;font:inherit;font-size:.9rem;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);min-height:150px;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* Reveal view */
+.reveal{min-height:70vh;display:flex;align-items:center;justify-content:center}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;padding:36px 28px;text-align:center;width:100%;max-width:420px;
+  box-shadow:0 12px 40px rgba(23,33,43,.08)
+}
+.card .eyebrow{margin-bottom:10px}
+.card h1{font-size:1.8rem}
+.card .big{font-family:var(--display);font-size:clamp(2.4rem,11vw,3.4rem);line-height:1.05;color:var(--accent);margin:18px 0 6px;overflow-wrap:anywhere}
+.card .meta{color:var(--muted);margin-top:14px}
+.card .primary{margin-top:22px}
+.secret{margin-top:18px;font-size:.9rem;color:var(--muted)}
+.paste{margin-top:14px;text-align:left}
+@media (prefers-reduced-motion:no-preference){
+  .pop{animation:pop .5s cubic-bezier(.2,.9,.3,1.3)}
+  @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ===== Organizer view ===== -->
+<div id="organizer">
+  <p class="eyebrow">Family gift exchange</p>
+  <h1>Tomlin Draw</h1>
+  <p class="sub">Put in the names, hit draw, text everyone their link. Nobody sees anyone else's name.</p>
+
+  <section>
+    <div class="row">
+      <div style="flex:2">
+        <label class="block" for="group">Occasion</label>
+        <input type="text" id="group" value="Christmas 2026">
+      </div>
+      <div style="flex:1">
+        <label class="block" for="budget">Budget</label>
+        <input type="text" id="budget" placeholder="$50" inputmode="numeric">
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Who's in</h2>
+    <div class="names" id="names"></div>
+    <div class="row" style="margin-top:10px">
+      <button type="button" id="add" class="small">+ Add a name</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Rules</h2>
+    <div class="opt">
+      <input type="checkbox" id="noRepeat" checked>
+      <div>
+        <label for="noRepeat">No repeats from 2024 or 2025</label>
+        <div class="hint">Uses the last two drawnames.com results. Names have to match the list above.</div>
+      </div>
+    </div>
+    <div class="opt" style="flex-direction:column;gap:6px">
+      <label for="couples" style="font-weight:500">Pairs who shouldn't draw each other</label>
+      <input type="text" id="couples" placeholder="JJ & Kait, Hewitt & Sonja">
+      <div class="hint">Optional. Separate pairs with commas.</div>
+    </div>
+  </section>
+
+  <section>
+    <button type="button" class="primary" id="draw">Draw names</button>
+    <div id="error" class="err" hidden></div>
+  </section>
+
+  <section id="results" hidden>
+    <h2>Send everyone their link</h2>
+    <p class="hint">Each link only shows that person's draw. Text them one at a time, or copy the whole list and paste it into the group chat (each person taps their own).</p>
+    <div class="row" style="margin-top:12px">
+      <button type="button" id="copyAll">Copy all links</button>
+      <button type="button" class="ghost" id="redraw">Draw again</button>
+    </div>
+    <div class="links" id="links"></div>
+    <details>
+      <summary>Show all matches (organizer only, spoilers)</summary>
+      <div class="matches" id="matches"></div>
+      <p class="hint" style="margin-top:12px">Save this somewhere so next year's draw can avoid repeats.</p>
+    </details>
+  </section>
+</div>
+
+<!-- ===== Reveal view ===== -->
+<div id="reveal" class="reveal" hidden>
+  <div class="card">
+    <p class="eyebrow" id="rGroup">Christmas</p>
+    <h1 id="rHello">Hey there</h1>
+    <p class="meta" id="rIntro">Your name has been drawn. Ready?</p>
+    <div id="rName" class="big" hidden></div>
+    <p class="meta" id="rBudget" hidden></p>
+    <button type="button" class="primary" id="rBtn">Tap to see who you drew</button>
+    <p class="secret" id="rSecret" hidden>Keep it secret. Screenshot it if you'll forget.</p>
+    <div class="paste" id="rPaste" hidden>
+      <p class="hint">Your link didn't come through with a code. Paste the code from your text here.</p>
+      <input type="text" id="rCode" placeholder="Paste code" style="margin-top:8px">
+      <button type="button" class="small" id="rGo" style="margin-top:8px">Open</button>
+    </div>
+  </div>
+</div>
+
+</main>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+// ---------- data ----------
+var DEFAULT_NAMES = ['JJ','Kait','Hewitt','Sonja','Micah','Lucas','Sarah'];
+// drawnames.com history, nicknames mapped to first names
+var HISTORY = {
+  2025: {Hewitt:'Kait', JJ:'Micah', Kait:'Lucas', Lucas:'Sarah', Micah:'Sonja', Sarah:'JJ', Sonja:'Hewitt'},
+  2024: {Hewitt:'JJ', JJ:'Lucas', Kait:'Sonja', Lucas:'Hewitt', Micah:'Kait', Sarah:'Micah', Sonja:'Sarah'}
+};
+var KEY = 'raccoonboys';
+
+// ---------- token (light obfuscation, not security; it's siblings) ----------
+function enc(s){
+  var bytes = new TextEncoder().encode(s), out = '';
+  for (var i = 0; i < bytes.length; i++) out += (bytes[i] ^ KEY.charCodeAt(i % KEY.length)).toString(16).padStart(2, '0');
+  return out;
+}
+function dec(h){
+  h = (h || '').replace(/[^0-9a-f]/gi, '');
+  if (!h || h.length % 2) return null;
+  var bytes = new Uint8Array(h.length / 2);
+  for (var i = 0; i < bytes.length; i++) bytes[i] = parseInt(h.substr(i * 2, 2), 16) ^ KEY.charCodeAt(i % KEY.length);
+  try { return new TextDecoder().decode(bytes); } catch (e) { return null; }
+}
+function makeToken(giver, receiver, group, budget){ return enc([giver, receiver, group, budget || ''].join('\n')); }
+function readToken(t){
+  var s = dec(t); if (!s) return null;
+  var p = s.split('\n'); if (p.length < 3) return null;
+  return {giver: p[0], receiver: p[1], group: p[2], budget: p[3] || ''};
+}
+function linkFor(token){ return location.origin + location.pathname + '#r' + token; }
+
+// ---------- draw ----------
+function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function lc(s){ return s.trim().toLowerCase(); }
+function draw(names, forbidden){
+  // forbidden: Set of "giver|receiver" lowercase
+  for (var attempt = 0; attempt < 5000; attempt++){
+    var r = shuffle(names.slice()), ok = true;
+    for (var i = 0; i < names.length; i++){
+      if (lc(names[i]) === lc(r[i]) || forbidden.has(lc(names[i]) + '|' + lc(r[i]))) { ok = false; break; }
+    }
+    if (ok) return names.map(function(n, i){ return {giver: n, receiver: r[i]}; });
+  }
+  return null;
+}
+
+// ---------- organizer UI ----------
+var $ = function(id){ return document.getElementById(id); };
+var namesEl = $('names');
+
+function addName(v){
+  var row = document.createElement('div'); row.className = 'name-row';
+  var inp = document.createElement('input'); inp.type = 'text'; inp.value = v || ''; inp.placeholder = 'Name';
+  inp.id = 'name-' + (namesEl.children.length + 1) + '-' + Math.random().toString(36).slice(2, 6);
+  var x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.textContent = '×'; x.setAttribute('aria-label', 'Remove');
+  x.onclick = function(){ row.remove(); };
+  row.appendChild(inp); row.appendChild(x); namesEl.appendChild(row);
+  return inp;
+}
+function getNames(){
+  return Array.prototype.map.call(namesEl.querySelectorAll('input'), function(i){ return i.value.trim(); }).filter(Boolean);
+}
+function showError(msg){ var e = $('error'); e.textContent = msg; e.hidden = !msg; }
+
+function runDraw(){
+  showError('');
+  var names = getNames();
+  var lower = names.map(lc);
+  if (names.length < 3) return showError('Need at least 3 names.');
+  if (new Set(lower).size !== names.length) return showError('Two people have the same name. Make them different (JJ and JJ2, whatever).');
+
+  var forbidden = new Set();
+  if ($('noRepeat').checked){
+    Object.keys(HISTORY).forEach(function(y){
+      Object.keys(HISTORY[y]).forEach(function(g){ forbidden.add(lc(g) + '|' + lc(HISTORY[y][g])); });
+    });
+  }
+  var bad = [];
+  $('couples').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean).forEach(function(pair){
+    var p = pair.split(/\s*(?:&|and|\+)\s*/i).map(function(s){ return s.trim(); }).filter(Boolean);
+    if (p.length !== 2 || lower.indexOf(lc(p[0])) < 0 || lower.indexOf(lc(p[1])) < 0) { bad.push(pair); return; }
+    forbidden.add(lc(p[0]) + '|' + lc(p[1])); forbidden.add(lc(p[1]) + '|' + lc(p[0]));
+  });
+  if (bad.length) return showError('Couldn\'t read these pairs (names must match the list): ' + bad.join(', '));
+
+  var result = draw(names, forbidden);
+  if (!result) return showError('No draw works with those rules. Loosen the pairs or turn off the no-repeat rule.');
+
+  var group = $('group').value.trim() || 'Gift exchange', budget = $('budget').value.trim();
+  var payload = {group: group, budget: budget, pairs: result};
+  try { localStorage.setItem('tomlin-draw', JSON.stringify(payload)); } catch (e) {}
+  render(payload);
+}
+
+function render(p){
+  var links = $('links'), matches = $('matches');
+  links.innerHTML = ''; matches.innerHTML = '';
+  p.pairs.forEach(function(pr){
+    var url = linkFor(makeToken(pr.giver, pr.receiver, p.group, p.budget));
+    var d = document.createElement('div'); d.className = 'link';
+    d.innerHTML = '<div class="who"></div><div class="url"></div><div class="row"><button type="button" class="small">Copy link</button></div>';
+    d.querySelector('.who').textContent = pr.giver;
+    d.querySelector('.url').textContent = url;
+    d.querySelector('button').onclick = function(){ copy(pr.giver + ', here\'s your ' + p.group + ' draw: ' + url, this); };
+    links.appendChild(d);
+    var a = document.createElement('b'); a.textContent = pr.giver;
+    var b = document.createElement('span'); b.textContent = '→ ' + pr.receiver;
+    matches.appendChild(a); matches.appendChild(b);
+  });
+  $('copyAll').onclick = function(){
+    var text = p.group + ' name draw' + (p.budget ? ' (budget ' + p.budget + ')' : '') + '. Tap YOUR link only:\n\n' +
+      p.pairs.map(function(pr){ return pr.giver + ': ' + linkFor(makeToken(pr.giver, pr.receiver, p.group, p.budget)); }).join('\n\n');
+    copy(text, this);
+  };
+  $('results').hidden = false;
+  $('results').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function copy(text, btn){
+  var done = function(){ toast('Copied'); };
+  var fail = function(){
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { toast('Copy failed, long-press the link instead'); }
+    ta.remove();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fail); else fail();
+}
+var toastT;
+function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1600); }
+
+// ---------- reveal UI ----------
+function showReveal(token){
+  $('organizer').hidden = true; $('reveal').hidden = false;
+  $('rName').hidden = true; $('rSecret').hidden = true; $('rBudget').hidden = true;
+  var info = readToken(token);
+  if (!info){
+    $('rHello').textContent = 'Hmm';
+    $('rIntro').textContent = 'That link is missing its code.';
+    $('rBtn').hidden = true; $('rPaste').hidden = false;
+    $('rGo').onclick = function(){
+      var v = $('rCode').value.trim(); var m = v.match(/#r([0-9a-f]+)/i); v = m ? m[1] : v.replace(/^#?r/i, '');
+      location.hash = 'r' + v; showReveal(v);
+    };
+    return;
+  }
+  $('rPaste').hidden = true; $('rBtn').hidden = false;
+  $('rGroup').textContent = info.group;
+  $('rHello').textContent = 'Hey ' + info.giver;
+  $('rIntro').textContent = 'Your name has been drawn. Ready?';
+  $('rName').hidden = true; $('rSecret').hidden = true; $('rBudget').hidden = true;
+  $('rBtn').onclick = function(){
+    $('rIntro').textContent = 'You\'re buying for';
+    $('rName').textContent = info.receiver; $('rName').hidden = false; $('rName').classList.add('pop');
+    if (info.budget){ $('rBudget').textContent = 'Budget: ' + info.budget; $('rBudget').hidden = false; }
+    $('rBtn').hidden = true; $('rSecret').hidden = false;
+  };
+}
+
+function route(){
+  var h = location.hash.replace(/^#/, '');
+  if (/^r/i.test(h)) { showReveal(h.slice(1)); return; }
+  $('reveal').hidden = true; $('organizer').hidden = false;
+}
+
+// ---------- boot ----------
+(function(){
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem('tomlin-draw') || 'null'); } catch (e) {}
+  var names = (saved && saved.pairs) ? saved.pairs.map(function(p){ return p.giver; }) : DEFAULT_NAMES;
+  names.forEach(addName);
+  if (saved){ $('group').value = saved.group || $('group').value; $('budget').value = saved.budget || ''; }
+  $('add').onclick = function(){ addName('').focus(); };
+  $('draw').onclick = runDraw;
+  $('redraw').onclick = function(){ runDraw(); };
+  if (saved && saved.pairs) render(saved);
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>
