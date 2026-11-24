@@ -201,13 +201,14 @@ button.x{width:42px;padding:0;color:var(--muted);flex:none}
 [data-person="sarah"] .chip{background:#fff;border-color:#f7a8cd}
 
 /* Sonja: Lord of the Rings. Shire green, gold ring, parchment */
-[data-person="sonja"] .card{background:radial-gradient(circle at 50% 30%,#fffdf2,#f6ecc9);border:3px double #b8860b;box-shadow:0 0 0 6px #fffaea,0 0 0 8px #2f6b2f,0 18px 50px rgba(60,50,10,.2)}
-[data-person="sonja"] .big{color:#8a6508;text-shadow:0 0 18px rgba(255,200,60,.55)}
-[data-person="sonja"] .big::after{content:"";display:block;width:60px;height:60px;margin:12px auto 0;border-radius:50%;border:6px solid #d4a017;box-shadow:0 0 22px rgba(212,160,23,.7),inset 0 0 8px rgba(120,80,0,.5)}
-[data-person="sonja"] h2{color:#2f6b2f}
-[data-person="sonja"] .chip{background:#fffaea;border-color:#c9a94a}
-[data-person="sonja"] .tagline{font-size:1rem}
-[data-person="sonja"] .card h1{font-family:'Uncial Antiqua',Georgia,serif}  /* Elvish-ish greeting; Cinzel elsewhere so names stay legible */
+[data-person="sonja"] .card{background:radial-gradient(circle at 50% 20%,#241a2e,#120c18 70%);border:3px double #d4a017;box-shadow:0 0 0 6px #0b0810,0 0 0 7px #3d2d4b,0 0 60px rgba(212,160,23,.18),0 18px 50px rgba(0,0,0,.6)}
+[data-person="sonja"] .big{color:#e2b44a;text-shadow:0 0 22px rgba(226,180,74,.6)}
+[data-person="sonja"] .big::after{content:"";display:block;width:60px;height:60px;margin:12px auto 0;border-radius:50%;border:6px solid #d4a017;box-shadow:0 0 26px rgba(212,160,23,.8),inset 0 0 8px rgba(120,80,0,.6)}
+[data-person="sonja"] h2{color:#e0486c}
+[data-person="sonja"] .chip{background:#1d1527;border-color:#8c8c99;color:#f1e9f3}
+[data-person="sonja"] .tagline{font-size:1rem;color:#b2a3bd}
+[data-person="sonja"] .card h1{font-family:'Pirata One',Georgia,serif;letter-spacing:.02em;color:#f1e9f3}  /* blackletter greeting (Berlin goth); Cinzel elsewhere so names stay legible */
+[data-person="sonja"] .card::before{content:"⛓️";display:block;font-size:1.1rem;letter-spacing:14px;opacity:.55;margin-bottom:4px}
 
 /* JJ: Friday Night Lights. Navy, gold, stadium glow */
 [data-person="jj"] body{background:radial-gradient(50% 35% at 10% 0,rgba(255,240,190,.25),transparent 70%) fixed,radial-gradient(50% 35% at 90% 0,rgba(255,240,190,.25),transparent 70%) fixed,var(--bg)}
@@ -655,19 +656,19 @@ var THEMES = {
     bought: 'I bought it (Taylor\'s Version)', done: 'Bought (Taylor\'s Version) ✓ (tap to undo)', boughtNote: 'Iconic. Banjo will stop texting you. Espresso martinis on you 🍸',
     tagline: 'Red-light mask on, AirPods Max in, cart full. 🔴', chips: ['🍸 Espresso martini', '🌴 Miami', '💅 Bravo', '🔴 Red light', '🎤 Eras']
   },
-  // JJ-approved 2026-11-24; built off her drawnames nickname "Yaya My Precious"
+  // JJ-approved 2026-11-24: LOTR + Gollum ("Yaya My Precious"), Berlin goth, choker necklaces, Outlander
   sonja: {
-    font: 'Cinzel', fontUrl: gf('Cinzel:wght@600&family=Uncial+Antiqua'),
-    vars: {'--bg': '#f4efdc', '--card': '#fffaea', '--fg': '#2c2a17', '--muted': '#6a6342', '--line': '#ddd2a8',
-      '--accent': '#2f6b2f', '--accent-fg': '#ffffff', '--pine': '#7a5a06', '--pine-soft': '#f5e8bf', '--done': '#8a6508', '--warn-soft': '#f8e2d6',
-      '--display': "'Cinzel',Georgia,serif", '--pattern-op': '.12'},
-    ink: '#2f6b2f', bgEmoji: ['💍', '🍃', '🍄', '🍃'], deco: '💍',
-    eyebrow: '💍 {group} · The Shire', hello: 'Yaya, my precious',
-    intro: 'One gift to rule them all. Your name has been drawn.', tap: 'Look into the ring',
-    buying: 'Your quest: a gift for', secret: 'Keep it secret. Keep it safe.',
-    bought: 'The quest is done: I bought it', done: 'Quest complete ✓ (tap to undo)', boughtNote: 'My preciousss. Banjo will stop texting you. Time for second breakfast.',
-    tagline: 'Not all those who wander are lost (but your gift should arrive by the 25th). A wizard is never late.',
-    chips: ['💍 My precious', '🍄 Second breakfast', '🧙 Gandalf', '🌿 The Shire']
+    font: 'Cinzel', fontUrl: gf('Cinzel:wght@600&family=Pirata+One'),
+    vars: {'--bg': '#0b0810', '--card': '#16101e', '--fg': '#f1e9f3', '--muted': '#b2a3bd', '--line': '#3d2d4b',
+      '--accent': '#e0486c', '--accent-fg': '#ffffff', '--btn': '#7a1431', '--btn-fg': '#ffffff', '--pine': '#e2b44a', '--pine-soft': '#2a1f33', '--done': '#8a6508', '--warn-soft': '#3a1c22',
+      '--display': "'Cinzel',Georgia,serif", '--pattern-op': '.14'},
+    ink: '#0b0810', bgEmoji: ['💍', '🖤', '⛓️', '🕯️'], deco: '💍',
+    eyebrow: '🖤 {group} · Berlin after dark', hello: 'Yaya, my precious',
+    intro: 'One gift to rule them all. Your name has been drawn, Sassenach.', tap: 'Look into the ring',
+    buying: 'Your quest: a gift for', secret: 'Keep it secret. Keep it safe. Tell no one, not even the Frasers.',
+    bought: 'The quest is done: I bought it', done: 'Quest complete ✓ (tap to undo)', boughtNote: 'My preciousss. Banjo will stop texting you. Je suis prest.',
+    tagline: 'Black choker, black coffee, black everything. Dinna fash, the gift arrives by the 25th.',
+    chips: ['💍 My precious', '⛓️ Choker', '🖤 Berlin', '🥃 Outlander', '🧙 Gandalf']
   },
   // JJ-approved 2026-11-24; Friday Night Lights for the QB coach, Lovey + raccoon cameos
   jj: {
