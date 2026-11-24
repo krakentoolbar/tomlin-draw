@@ -18,7 +18,9 @@ CREATE TABLE IF NOT EXISTS members (
   sort INTEGER NOT NULL,
   confirmed_at TEXT,
   link_opened_at TEXT,
-  revealed_at TEXT
+  revealed_at TEXT,
+  bought_wish_id TEXT,              -- the list item this Santa marked "I bought it" (wishes.id)
+  bought_note TEXT                  -- or free text when they got something not on the list
 );
 CREATE TABLE IF NOT EXISTS assignments (
   group_id TEXT NOT NULL,
@@ -38,7 +40,16 @@ CREATE TABLE IF NOT EXISTS wishes (
   text TEXT NOT NULL,
   url TEXT,
   created_at TEXT NOT NULL,
-  deleted_at TEXT
+  deleted_at TEXT,
+  added_by TEXT,                    -- members.id of someone else who added it (Santa note / extra gift); NULL = the owner's own wish
+  bought_by TEXT,                   -- members.id
+  bought_at TEXT,
+  bought_kind TEXT CHECK (bought_kind IN ('santa','extra')),
+  preview_title TEXT,
+  preview_image TEXT,
+  preview_site TEXT,
+  preview_status TEXT,              -- 'pending' | 'ok' | 'failed' | NULL when no url
+  preview_tried INTEGER NOT NULL DEFAULT 0  -- fetch attempts so far (Worker + Banjo)
 );
 CREATE TABLE IF NOT EXISTS messages (
   id TEXT PRIMARY KEY,
