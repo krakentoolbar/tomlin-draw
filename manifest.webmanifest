@@ -1,0 +1,24 @@
+{
+  "name": "Tomlin Draw",
+  "short_name": "Tomlin Draw",
+  "description": "Tomlin family Secret Santa",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f6f9",
+  "theme_color": "#b3263c",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20rx='22'%20fill='%23b3263c'/%3E%3Ctext%20x='50'%20y='70'%20font-size='60'%20text-anchor='middle'%3E%F0%9F%8E%81%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20rx='22'%20fill='%23b3263c'/%3E%3Ctext%20x='50'%20y='70'%20font-size='60'%20text-anchor='middle'%3E%F0%9F%8E%81%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

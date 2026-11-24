@@ -5,10 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tomlin Draw</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%81%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#b3263c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tomlin Draw">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Crect%20width='100'%20height='100'%20rx='22'%20fill='%23b3263c'/%3E%3Ctext%20x='50'%20y='70'%20font-size='60'%20text-anchor='middle'%3E%F0%9F%8E%81%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap">
 <style>
-/* Layout: one narrow column (phone-first), organizer form on top, generated links below; reveal view is a single centered card. */
+/* Layout: one narrow column (phone-first). Three hash views: setup (#), member (#r<token>), admin (#a<token>). */
 :root{
   --bg:#f3f6f9;        /* snow with a touch of blue */
   --card:#ffffff;
@@ -34,6 +38,7 @@
   --accent:#e0506a;--accent-fg:#ffffff;--pine:#6fc49a;--pine-soft:#15302a;--warn-soft:#3a1c22;color-scheme:dark
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{
   background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
@@ -46,44 +51,52 @@ h1,h2{font-family:var(--display);font-weight:400;letter-spacing:-.01em;text-wrap
 h1{font-size:2.2rem;line-height:1.1}
 h2{font-size:1.25rem;margin-bottom:10px}
 p{margin:0}
+a{color:var(--accent)}
 .eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:500}
 .sub{color:var(--muted);margin-top:6px}
 section{margin-top:28px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .row>*{min-width:0}
 label.block{display:block;font-weight:500;margin-bottom:6px}
-input[type=text]{
+input[type=text],input[type=tel],input[type=date],input[type=url],textarea{
   width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)
 }
-input[type=text]:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type=date]{min-height:46px}
+textarea{min-height:76px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible,a.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .names{display:flex;flex-direction:column;gap:8px}
 .name-row{display:flex;gap:8px}
-.name-row input{flex:1}
-button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:10px 14px}
-button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700;padding:14px 20px;font-size:1.05rem;width:100%}
+.name-row input[type=text]{flex:1 1 40%}
+.name-row input[type=tel]{flex:1 1 55%}
+button,a.btn{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:10px 14px;text-decoration:none;display:inline-block;text-align:center}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.primary,a.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700;padding:14px 20px;font-size:1.05rem;width:100%}
+button.primary.done{background:var(--pine);border-color:var(--pine)}
 button.ghost{background:transparent;border-color:transparent;color:var(--muted);padding:6px 8px}
-button.small{padding:6px 10px;font-size:.9rem}
-button.x{width:42px;padding:0;color:var(--muted)}
+button.small,a.btn.small{padding:6px 10px;font-size:.9rem}
+button.x{width:42px;padding:0;color:var(--muted);flex:none}
 .opt{display:flex;gap:10px;align-items:flex-start;margin-top:10px}
-.opt input{margin-top:5px;accent-color:var(--accent)}
+.opt input[type=checkbox]{margin-top:5px;accent-color:var(--accent)}
 .hint{font-size:.9rem;color:var(--muted)}
 .err{background:var(--warn-soft);color:var(--accent);padding:10px 12px;border-radius:8px;margin-top:12px;font-size:.95rem}
+.note{background:var(--pine-soft);color:var(--pine);padding:10px 12px;border-radius:8px;margin-top:12px;font-size:.95rem}
 .links{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 .link{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
 .link .who{font-weight:700}
 .link .url{font-size:.8rem;color:var(--muted);word-break:break-all;margin-top:4px}
 .link .row{margin-top:8px}
 .pill{display:inline-block;background:var(--pine-soft);color:var(--pine);font-size:.75rem;padding:2px 8px;border-radius:999px;font-weight:500}
-details{margin-top:18px}
-summary{cursor:pointer;color:var(--muted)}
+.pill.off{background:var(--warn-soft);color:var(--accent)}
 .matches{margin-top:10px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-variant-numeric:tabular-nums}
 .matches b{font-weight:700}
-textarea{width:100%;font:inherit;font-size:.9rem;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);min-height:150px;margin-top:8px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.adminurl{font-size:.85rem;color:var(--muted);word-break:break-all;margin:8px 0 12px}
 
-/* Reveal view */
-.reveal{min-height:70vh;display:flex;align-items:center;justify-content:center}
+/* Member view */
+.reveal{min-height:60vh;display:flex;align-items:center;justify-content:center}
+.reveal.compact{min-height:0}
 .card{
   background:var(--card);border:1px solid var(--line);border-radius:18px;padding:36px 28px;text-align:center;width:100%;max-width:420px;
   box-shadow:0 12px 40px rgba(23,33,43,.08)
@@ -95,6 +108,32 @@ textarea{width:100%;font:inherit;font-size:.9rem;padding:10px;border:1px solid v
 .card .primary{margin-top:22px}
 .secret{margin-top:18px;font-size:.9rem;color:var(--muted)}
 .paste{margin-top:14px;text-align:left}
+.wl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.wl li{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere}
+.wl li a{display:block;font-size:.85rem;margin-top:2px}
+.wish-row{display:flex;gap:8px;align-items:flex-start}
+.wish-row .f{flex:1;display:flex;flex-direction:column;gap:6px}
+.wish-row input[type=url]{font-size:.9rem;padding:8px 12px}
+.wishes{display:flex;flex-direction:column;gap:12px}
+.thread{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.msg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere}
+.msg.mine{border-color:var(--accent)}
+.msg .who{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:500;margin-bottom:2px}
+.answer{display:flex;gap:8px;margin-top:8px}
+.answer input{flex:1}
+
+/* Admin view */
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.mcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.mcard .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mcard .nm{font-family:var(--display);font-size:1.3rem}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:.9rem;margin-top:8px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.mcard .row{margin-top:10px}
+.edit{display:flex;gap:8px;margin-top:10px}
+.edit input{flex:1}
 @media (prefers-reduced-motion:no-preference){
   .pop{animation:pop .5s cubic-bezier(.2,.9,.3,1.3)}
   @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
@@ -104,210 +143,217 @@ textarea{width:100%;font:inherit;font-size:.9rem;padding:10px;border:1px solid v
 <body>
 <main>
 
-<!-- ===== Organizer view ===== -->
-<div id="organizer">
+<!-- ===== Setup view (#) ===== -->
+<div id="setup">
   <p class="eyebrow">Family gift exchange</p>
   <h1>Tomlin Draw</h1>
-  <p class="sub">Put in the names, hit draw, text everyone their link. Nobody sees anyone else's name.</p>
+  <p class="sub">Put in the names and phone numbers, hit draw. Banjo texts everyone their own private link.</p>
 
-  <section>
-    <div class="row">
-      <div style="flex:2">
-        <label class="block" for="group">Occasion</label>
-        <input type="text" id="group" value="Christmas 2026">
-      </div>
-      <div style="flex:1">
-        <label class="block" for="budget">Budget</label>
-        <input type="text" id="budget" placeholder="$50" inputmode="numeric">
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Who's in</h2>
-    <div class="names" id="names"></div>
+  <div id="sSaved" class="box" style="margin-top:20px" hidden>
+    <p><b>You already have a draw going.</b> <span class="hint" id="sSavedName"></span></p>
     <div class="row" style="margin-top:10px">
-      <button type="button" id="add" class="small">+ Add a name</button>
+      <a class="btn small" id="sDash" href="#">Open your dashboard</a>
+      <button type="button" class="small" id="sReuse">Reuse last year's people</button>
     </div>
-  </section>
+  </div>
 
-  <section>
-    <h2>Rules</h2>
-    <div class="opt">
-      <input type="checkbox" id="noRepeat" checked>
-      <div>
-        <label for="noRepeat">No repeats from 2024 or 2025</label>
-        <div class="hint">Uses the last two drawnames.com results. Names have to match the list above.</div>
+  <div id="sForm">
+    <section>
+      <label class="block" for="group">Occasion</label>
+      <input type="text" id="group" value="Christmas 2026">
+      <div class="row" style="margin-top:12px">
+        <div style="flex:3 1 160px">
+          <label class="block" for="exchangeDate">Exchange date</label>
+          <input type="date" id="exchangeDate">
+        </div>
+        <div style="flex:2 1 100px">
+          <label class="block" for="budget">Budget</label>
+          <input type="text" id="budget" placeholder="$50" inputmode="numeric">
+        </div>
       </div>
-    </div>
-    <div class="opt" style="flex-direction:column;gap:6px">
-      <label for="couples" style="font-weight:500">Pairs who shouldn't draw each other</label>
-      <input type="text" id="couples" placeholder="JJ & Kait, Hewitt & Sonja">
-      <div class="hint">Optional. Separate pairs with commas.</div>
-    </div>
-  </section>
+    </section>
 
-  <section>
-    <button type="button" class="primary" id="draw">Draw names</button>
-    <div id="error" class="err" hidden></div>
-  </section>
+    <section>
+      <h2>Who's in</h2>
+      <p class="hint" style="margin-bottom:10px">Phone is optional. Anyone without one, you'll get a link to send by hand.</p>
+      <div class="names" id="names"></div>
+      <div class="row" style="margin-top:10px">
+        <button type="button" id="add" class="small">+ Add a name</button>
+      </div>
+    </section>
 
-  <section id="results" hidden>
-    <h2>Send everyone their link</h2>
-    <p class="hint">Each link only shows that person's draw. Text them one at a time, or copy the whole list and paste it into the group chat (each person taps their own).</p>
-    <div class="row" style="margin-top:12px">
-      <button type="button" id="copyAll">Copy all links</button>
-      <button type="button" class="ghost" id="redraw">Draw again</button>
+    <section>
+      <h2>Rules</h2>
+      <div class="opt">
+        <input type="checkbox" id="noRepeat" checked>
+        <div>
+          <label for="noRepeat">No repeats from past years</label>
+          <div class="hint">Avoids who you had in 2024 and 2025 (and any draw made here). Names have to match.</div>
+        </div>
+      </div>
+      <div class="opt" style="flex-direction:column;gap:6px">
+        <label for="couples" style="font-weight:500">Pairs who shouldn't draw each other</label>
+        <input type="text" id="couples" placeholder="JJ & Kait, Hewitt & Sonja">
+        <div class="hint">Optional. Separate pairs with commas.</div>
+      </div>
+    </section>
+
+    <section>
+      <button type="button" class="primary" id="draw">Draw names</button>
+      <div id="error" class="err" hidden></div>
+    </section>
+  </div>
+
+  <section id="sDone" hidden>
+    <h2>Done. Names are drawn.</h2>
+    <p class="note" id="sTextNote">Banjo is texting everyone their link.</p>
+    <div class="box" style="margin-top:16px">
+      <p><b>Your dashboard link</b></p>
+      <p class="hint">Save this, it's your dashboard: who's opened, who's bought, resend links.</p>
+      <p class="adminurl" id="sAdminUrl"></p>
+      <button type="button" class="primary" id="sCopyAdmin">Copy dashboard link</button>
+      <div class="row" style="margin-top:10px"><a class="btn small" id="sOpenAdmin" href="#">Open dashboard</a></div>
     </div>
-    <div class="links" id="links"></div>
-    <details>
-      <summary>Show all matches (organizer only, spoilers)</summary>
-      <div class="matches" id="matches"></div>
-      <p class="hint" style="margin-top:12px">Save this somewhere so next year's draw can avoid repeats.</p>
-    </details>
+    <div id="sManual" hidden>
+      <h2 style="margin-top:24px">Send these by hand</h2>
+      <p class="hint">No phone on file, so text these yourself. Each link only works for that person.</p>
+      <div class="links" id="sLinks"></div>
+    </div>
+    <div class="row" style="margin-top:20px"><button type="button" class="ghost" id="sNew">Set up another draw</button></div>
   </section>
 </div>
 
-<!-- ===== Reveal view ===== -->
-<div id="reveal" class="reveal" hidden>
-  <div class="card">
-    <p class="eyebrow" id="rGroup">Christmas</p>
-    <h1 id="rHello">Hey there</h1>
-    <p class="meta" id="rIntro">Your name has been drawn. Ready?</p>
-    <div id="rName" class="big" hidden></div>
-    <p class="meta" id="rBudget" hidden></p>
-    <button type="button" class="primary" id="rBtn">Tap to see who you drew</button>
-    <p class="secret" id="rSecret" hidden>Keep it secret. Screenshot it if you'll forget.</p>
-    <div class="paste" id="rPaste" hidden>
-      <p class="hint">Your link didn't come through with a code. Paste the code from your text here.</p>
-      <input type="text" id="rCode" placeholder="Paste code" style="margin-top:8px">
-      <button type="button" class="small" id="rGo" style="margin-top:8px">Open</button>
+<!-- ===== Member view (#r<token>) ===== -->
+<div id="member" hidden>
+  <div class="reveal" id="mStage">
+    <div class="card">
+      <p class="eyebrow" id="rGroup">Tomlin Draw</p>
+      <h1 id="rHello">One sec</h1>
+      <p class="meta" id="rIntro">Loading your draw...</p>
+      <div id="rName" class="big" hidden></div>
+      <p class="meta" id="rBudget" hidden></p>
+      <button type="button" class="primary" id="rBtn" hidden>Tap to see who you drew</button>
+      <button type="button" class="primary" id="rRetry" hidden>Try again</button>
+      <p class="secret" id="rSecret" hidden>Keep it secret. This link is only yours.</p>
+      <div class="paste" id="rPaste" hidden>
+        <p class="hint">Paste the link or code from your text here.</p>
+        <input type="text" id="rCode" placeholder="Paste link or code" style="margin-top:8px">
+        <button type="button" class="small" id="rGo" style="margin-top:8px">Open</button>
+      </div>
     </div>
   </div>
+
+  <div id="mBody" hidden>
+    <section id="mSanta" hidden>
+      <h2>Your Secret Santa asks</h2>
+      <p class="hint">You won't see who's asking. Answer and Banjo lets them know.</p>
+      <div class="thread" id="mSantaThread"></div>
+    </section>
+
+    <section>
+      <h2 id="mTheirTitle">Their wish list</h2>
+      <ul class="wl" id="mTheirList"></ul>
+      <p class="hint" id="mTheirEmpty" hidden></p>
+    </section>
+
+    <section id="mAsk">
+      <h2 id="mAskTitle">Ask your giftee anonymously</h2>
+      <p class="hint">Sizes, colors, "do you already have one?" They won't know it's you.</p>
+      <textarea id="mAskText" maxlength="500" placeholder="What size shirt do you wear?" style="margin-top:8px"></textarea>
+      <div class="row" style="margin-top:8px"><button type="button" class="small" id="mAskGo">Send question</button></div>
+      <div id="mAskErr" class="err" hidden></div>
+      <div class="thread" id="mAskThread"></div>
+    </section>
+
+    <section>
+      <button type="button" class="primary" id="mConfirm">I bought it</button>
+      <p class="note" id="mConfirmNote" hidden>Nice. Banjo will stop texting you.</p>
+      <div id="mConfirmErr" class="err" hidden></div>
+    </section>
+
+    <section>
+      <h2>My wish list</h2>
+      <p class="hint" style="margin-bottom:10px">Whoever drew you sees this. Add a thing and an optional link. Saves on its own.</p>
+      <div class="wishes" id="mWishes"></div>
+      <div class="row" style="margin-top:10px"><button type="button" class="small" id="mAddWish">+ Add a wish</button></div>
+      <div id="mWishErr" class="err" hidden></div>
+    </section>
+
+    <section id="mPairs" hidden>
+      <h2>Who had who</h2>
+      <div class="matches" id="mPairList"></div>
+    </section>
+  </div>
+</div>
+
+<!-- ===== Admin view (#a<token>) ===== -->
+<div id="admin" hidden>
+  <p class="eyebrow" id="aEyebrow">Organizer dashboard</p>
+  <h1 id="aTitle">Loading...</h1>
+  <p class="sub" id="aSub"></p>
+  <div class="stats" id="aStats"></div>
+  <div class="acts">
+    <button type="button" class="small" id="aRefresh">Refresh</button>
+    <button type="button" class="small" id="aSpoilers">Show matches</button>
+    <button type="button" class="small" id="aRedraw">Redraw</button>
+    <button type="button" class="small" id="aRevealAll">Reveal all</button>
+  </div>
+  <div id="aErr" class="err" hidden></div>
+  <section id="aMatchBox" hidden>
+    <h2>Matches (spoilers)</h2>
+    <div class="matches" id="aMatches"></div>
+  </section>
+  <section>
+    <div class="links" id="aList"></div>
+  </section>
 </div>
 
 </main>
 <div class="toast" id="toast">Copied</div>
 
 <script>
-// ---------- data ----------
+var API = 'https://tomlin-draw.jjtomlin18.workers.dev';
 var DEFAULT_NAMES = ['JJ','Kait','Hewitt','Sonja','Micah','Lucas','Sarah'];
-// drawnames.com history, nicknames mapped to first names
-var HISTORY = {
-  2025: {Hewitt:'Kait', JJ:'Micah', Kait:'Lucas', Lucas:'Sarah', Micah:'Sonja', Sarah:'JJ', Sonja:'Hewitt'},
-  2024: {Hewitt:'JJ', JJ:'Lucas', Kait:'Sonja', Lucas:'Hewitt', Micah:'Kait', Sarah:'Micah', Sonja:'Sarah'}
-};
-var KEY = 'raccoonboys';
+var PRONOUN = {jj:'him', kait:'her', hewitt:'him', sonja:'her', micah:'him', lucas:'him', sarah:'her'};
+var STORE = 'tomlin-draw-v2';
+var MAX_WISHES = 30;
 
-// ---------- token (light obfuscation, not security; it's siblings) ----------
-function enc(s){
-  var bytes = new TextEncoder().encode(s), out = '';
-  for (var i = 0; i < bytes.length; i++) out += (bytes[i] ^ KEY.charCodeAt(i % KEY.length)).toString(16).padStart(2, '0');
-  return out;
-}
-function dec(h){
-  h = (h || '').replace(/[^0-9a-f]/gi, '');
-  if (!h || h.length % 2) return null;
-  var bytes = new Uint8Array(h.length / 2);
-  for (var i = 0; i < bytes.length; i++) bytes[i] = parseInt(h.substr(i * 2, 2), 16) ^ KEY.charCodeAt(i % KEY.length);
-  try { return new TextDecoder().decode(bytes); } catch (e) { return null; }
-}
-function makeToken(giver, receiver, group, budget){ return enc([giver, receiver, group, budget || ''].join('\n')); }
-function readToken(t){
-  var s = dec(t); if (!s) return null;
-  var p = s.split('\n'); if (p.length < 3) return null;
-  return {giver: p[0], receiver: p[1], group: p[2], budget: p[3] || ''};
-}
-function linkFor(token){ return location.origin + location.pathname + '#r' + token; }
-
-// ---------- draw ----------
-function shuffle(a){ for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-function lc(s){ return s.trim().toLowerCase(); }
-function draw(names, forbidden){
-  // forbidden: Set of "giver|receiver" lowercase
-  for (var attempt = 0; attempt < 5000; attempt++){
-    var r = shuffle(names.slice()), ok = true;
-    for (var i = 0; i < names.length; i++){
-      if (lc(names[i]) === lc(r[i]) || forbidden.has(lc(names[i]) + '|' + lc(r[i]))) { ok = false; break; }
-    }
-    if (ok) return names.map(function(n, i){ return {giver: n, receiver: r[i]}; });
-  }
-  return null;
-}
-
-// ---------- organizer UI ----------
+// ---------- helpers ----------
 var $ = function(id){ return document.getElementById(id); };
-var namesEl = $('names');
-
-function addName(v){
-  var row = document.createElement('div'); row.className = 'name-row';
-  var inp = document.createElement('input'); inp.type = 'text'; inp.value = v || ''; inp.placeholder = 'Name';
-  inp.id = 'name-' + (namesEl.children.length + 1) + '-' + Math.random().toString(36).slice(2, 6);
-  var x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.textContent = '×'; x.setAttribute('aria-label', 'Remove');
-  x.onclick = function(){ row.remove(); };
-  row.appendChild(inp); row.appendChild(x); namesEl.appendChild(row);
-  return inp;
+function el(tag, cls, text){
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
 }
-function getNames(){
-  return Array.prototype.map.call(namesEl.querySelectorAll('input'), function(i){ return i.value.trim(); }).filter(Boolean);
-}
-function showError(msg){ var e = $('error'); e.textContent = msg; e.hidden = !msg; }
+function btn(id, text, cls){ var b = el('button', cls || 'small', text); b.type = 'button'; if (id) b.id = id; return b; }
+function show(id, on){ $(id).hidden = !on; }
+function setErr(id, msg){ var e = $(id); e.textContent = msg || ''; e.hidden = !msg; }
+function lc(s){ return String(s || '').trim().toLowerCase(); }
+function base(){ return location.origin + location.pathname; }
+function load(){ try { return JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { return null; } }
+function save(v){ try { localStorage.setItem(STORE, JSON.stringify(v)); } catch (e) {} }
 
-function runDraw(){
-  showError('');
-  var names = getNames();
-  var lower = names.map(lc);
-  if (names.length < 3) return showError('Need at least 3 names.');
-  if (new Set(lower).size !== names.length) return showError('Two people have the same name. Make them different (JJ and JJ2, whatever).');
-
-  var forbidden = new Set();
-  if ($('noRepeat').checked){
-    Object.keys(HISTORY).forEach(function(y){
-      Object.keys(HISTORY[y]).forEach(function(g){ forbidden.add(lc(g) + '|' + lc(HISTORY[y][g])); });
+function api(method, path, body){
+  var opts = {method: method, headers: {}};
+  if (body !== undefined){ opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  return fetch(API + path, opts).then(function(res){
+    return res.text().then(function(txt){
+      var data = null;
+      try { data = txt ? JSON.parse(txt) : null; } catch (e) {}
+      if (!res.ok){
+        var err = new Error((data && data.error) || ('Something went wrong (' + res.status + '). Try again.'));
+        err.status = res.status; throw err;
+      }
+      return data;
     });
-  }
-  var bad = [];
-  $('couples').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean).forEach(function(pair){
-    var p = pair.split(/\s*(?:&|and|\+)\s*/i).map(function(s){ return s.trim(); }).filter(Boolean);
-    if (p.length !== 2 || lower.indexOf(lc(p[0])) < 0 || lower.indexOf(lc(p[1])) < 0) { bad.push(pair); return; }
-    forbidden.add(lc(p[0]) + '|' + lc(p[1])); forbidden.add(lc(p[1]) + '|' + lc(p[0]));
+  }, function(){
+    var err = new Error('Can\'t reach the server. Check your connection and try again.');
+    err.status = 0; throw err;
   });
-  if (bad.length) return showError('Couldn\'t read these pairs (names must match the list): ' + bad.join(', '));
-
-  var result = draw(names, forbidden);
-  if (!result) return showError('No draw works with those rules. Loosen the pairs or turn off the no-repeat rule.');
-
-  var group = $('group').value.trim() || 'Gift exchange', budget = $('budget').value.trim();
-  var payload = {group: group, budget: budget, pairs: result};
-  try { localStorage.setItem('tomlin-draw', JSON.stringify(payload)); } catch (e) {}
-  render(payload);
 }
 
-function render(p){
-  var links = $('links'), matches = $('matches');
-  links.innerHTML = ''; matches.innerHTML = '';
-  p.pairs.forEach(function(pr){
-    var url = linkFor(makeToken(pr.giver, pr.receiver, p.group, p.budget));
-    var d = document.createElement('div'); d.className = 'link';
-    d.innerHTML = '<div class="who"></div><div class="url"></div><div class="row"><button type="button" class="small">Copy link</button></div>';
-    d.querySelector('.who').textContent = pr.giver;
-    d.querySelector('.url').textContent = url;
-    d.querySelector('button').onclick = function(){ copy(pr.giver + ', here\'s your ' + p.group + ' draw: ' + url, this); };
-    links.appendChild(d);
-    var a = document.createElement('b'); a.textContent = pr.giver;
-    var b = document.createElement('span'); b.textContent = '→ ' + pr.receiver;
-    matches.appendChild(a); matches.appendChild(b);
-  });
-  $('copyAll').onclick = function(){
-    var text = p.group + ' name draw' + (p.budget ? ' (budget ' + p.budget + ')' : '') + '. Tap YOUR link only:\n\n' +
-      p.pairs.map(function(pr){ return pr.giver + ': ' + linkFor(makeToken(pr.giver, pr.receiver, p.group, p.budget)); }).join('\n\n');
-    copy(text, this);
-  };
-  $('results').hidden = false;
-  $('results').scrollIntoView({behavior: 'smooth', block: 'start'});
-}
-
-function copy(text, btn){
+function copy(text){
   var done = function(){ toast('Copied'); };
   var fail = function(){
     var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
@@ -320,51 +366,484 @@ function copy(text, btn){
 var toastT;
 function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('show'); }, 1600); }
 
-// ---------- reveal UI ----------
-function showReveal(token){
-  $('organizer').hidden = true; $('reveal').hidden = false;
-  $('rName').hidden = true; $('rSecret').hidden = true; $('rBudget').hidden = true;
-  var info = readToken(token);
-  if (!info){
-    $('rHello').textContent = 'Hmm';
-    $('rIntro').textContent = 'That link is missing its code.';
-    $('rBtn').hidden = true; $('rPaste').hidden = false;
-    $('rGo').onclick = function(){
-      var v = $('rCode').value.trim(); var m = v.match(/#r([0-9a-f]+)/i); v = m ? m[1] : v.replace(/^#?r/i, '');
-      location.hash = 'r' + v; showReveal(v);
+function fmtPhone(v){
+  var s = String(v || '').trim(); if (!s) return '';
+  var plus = s.charAt(0) === '+', d = s.replace(/\D/g, '');
+  if (!plus && d.length === 10) return '+1' + d;
+  if (!plus && d.length === 11 && d.charAt(0) === '1') return '+' + d;
+  return d ? '+' + d : s;
+}
+function validPhone(v){ return !v || /^\+\d{10,15}$/.test(v); }
+function fmtWhen(iso){
+  if (!iso) return '—';
+  var d = new Date(iso); if (isNaN(d)) return '—';
+  return d.toLocaleString(undefined, {month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'});
+}
+function daysText(n){
+  if (n == null) return '';
+  if (n > 1) return n + ' days left';
+  if (n === 1) return '1 day left';
+  if (n === 0) return 'It\'s today!';
+  return 'Exchange is done';
+}
+function pronoun(name){ return PRONOUN[lc(name)] || 'them'; }
+function safeHref(u){
+  u = String(u || '').trim(); if (!u) return '';
+  if (/^https?:\/\//i.test(u)) return u;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return '';      // javascript:, data:, etc.
+  return 'https://' + u;
+}
+function hostOf(u){ try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
+function looksLikeUrl(s){ return /^(https?:\/\/|www\.)\S+$/i.test(String(s || '').trim()); }
+
+// ---------- setup view ----------
+var nameSeq = 0;
+function addName(name, phone){
+  var n = ++nameSeq;
+  var row = el('div', 'name-row');
+  var inp = el('input'); inp.type = 'text'; inp.value = name || ''; inp.placeholder = 'Name'; inp.id = 'name-' + n;
+  inp.setAttribute('aria-label', 'Name');
+  var ph = el('input'); ph.type = 'tel'; ph.value = phone || ''; ph.placeholder = 'Phone (optional)'; ph.id = 'phone-' + n;
+  ph.setAttribute('aria-label', 'Phone'); ph.autocomplete = 'off';
+  ph.onblur = function(){ ph.value = fmtPhone(ph.value); };
+  var x = btn('remove-' + n, '×', 'x'); x.setAttribute('aria-label', 'Remove');
+  x.onclick = function(){ row.remove(); };
+  row.appendChild(inp); row.appendChild(ph); row.appendChild(x); $('names').appendChild(row);
+  return inp;
+}
+function fillNames(names, phones){
+  $('names').textContent = '';
+  names.forEach(function(nm, i){ addName(nm, (phones && phones[i]) || ''); });
+}
+function readMembers(){
+  var out = [];
+  Array.prototype.forEach.call($('names').children, function(row){
+    var ins = row.querySelectorAll('input');
+    var name = ins[0].value.trim(), phone = fmtPhone(ins[1].value);
+    ins[1].value = phone;
+    if (name) out.push({name: name, phone: phone || null});
+  });
+  return out;
+}
+function parseCouples(text, names){
+  var lower = names.map(lc), pairs = [], bad = [];
+  text.split(',').map(function(s){ return s.trim(); }).filter(Boolean).forEach(function(pair){
+    var p = pair.split(/\s*(?:&|\+|\/|\band\b)\s*/i).filter(Boolean);
+    if (p.length !== 2 || lower.indexOf(lc(p[0])) < 0 || lower.indexOf(lc(p[1])) < 0) { bad.push(pair); return; }
+    pairs.push([names[lower.indexOf(lc(p[0]))], names[lower.indexOf(lc(p[1]))]]);
+  });
+  return {pairs: pairs, bad: bad};
+}
+
+function runDraw(){
+  setErr('error', '');
+  var members = readMembers(), names = members.map(function(m){ return m.name; });
+  if (members.length < 3) return setErr('error', 'Need at least 3 names.');
+  var seen = {};
+  for (var i = 0; i < names.length; i++){
+    if (seen[lc(names[i])]) return setErr('error', 'Two people are both called ' + names[i] + '. Make them different.');
+    seen[lc(names[i])] = 1;
+    if (!validPhone(members[i].phone)) return setErr('error', names[i] + '\'s phone doesn\'t look right. Use 10 digits, or leave it blank.');
+  }
+  var c = parseCouples($('couples').value, names);
+  if (c.bad.length) return setErr('error', 'Couldn\'t read these pairs (names must match the list): ' + c.bad.join(', '));
+  var date = $('exchangeDate').value;
+  if (!date) return setErr('error', 'Pick an exchange date.');
+  var body = {
+    name: $('group').value.trim() || 'Gift exchange',
+    year: parseInt(date.slice(0, 4), 10),
+    exchange_date: date,
+    budget: $('budget').value.trim(),
+    organizer_name: 'JJ',
+    members: members,
+    couples: c.pairs,
+    no_repeat: $('noRepeat').checked
+  };
+  var b = $('draw'); b.disabled = true; b.textContent = 'Drawing...';
+  api('POST', '/groups', body).then(function(res){
+    var adminLink = res.admin_link || (base() + '#a' + res.admin_token);
+    save({admin_token: res.admin_token, admin_link: adminLink, group: body.name,
+      names: names, phones: members.map(function(m){ return m.phone || ''; })});
+    renderDone(res, adminLink, body.name);
+  }, function(err){
+    setErr('error', err.message);
+  }).then(function(){ b.disabled = false; b.textContent = 'Draw names'; });
+}
+
+function renderDone(res, adminLink, groupName){
+  var mems = res.members || [];
+  var manual = mems.filter(function(m){ return !m.has_phone; });
+  var texted = mems.length - manual.length;
+  $('sTextNote').textContent = texted
+    ? 'Banjo is texting everyone their link' + (manual.length ? ' (everyone with a phone).' : '.')
+    : 'Nobody has a phone on file, so send the links below yourself.';
+  $('sAdminUrl').textContent = adminLink;
+  $('sCopyAdmin').onclick = function(){ copy(adminLink); };
+  $('sOpenAdmin').href = '#a' + res.admin_token;
+  var list = $('sLinks'); list.textContent = '';
+  manual.forEach(function(m, i){
+    var url = m.link || (base() + '#r' + m.token);
+    var d = el('div', 'link');
+    d.appendChild(el('div', 'who', m.name));
+    d.appendChild(el('div', 'url', url));
+    var r = el('div', 'row'), c = btn('sCopy-' + (i + 1), 'Copy link');
+    c.onclick = function(){ copy(m.name + ', here\'s your ' + groupName + ' draw (don\'t share): ' + url); };
+    r.appendChild(c); d.appendChild(r); list.appendChild(d);
+  });
+  show('sManual', manual.length > 0);
+  show('sForm', false); show('sSaved', false); show('sDone', true);
+  window.scrollTo(0, 0);
+}
+
+function showSetup(){
+  var saved = load();
+  if (saved && saved.admin_token){
+    $('sDash').href = '#a' + saved.admin_token;
+    $('sSavedName').textContent = saved.group ? '(' + saved.group + ')' : '';
+    $('sReuse').hidden = !(saved.names && saved.names.length);
+    $('sReuse').onclick = function(){ fillNames(saved.names, saved.phones); toast('Filled in last time\'s people'); };
+  }
+  show('sSaved', !!(saved && saved.admin_token) && $('sDone').hidden);
+}
+
+// ---------- member view ----------
+var M = {token: '', data: null, wishSeq: 0, saveT: null, saving: false, again: false, lastSaved: ''};
+
+function stage(opts){
+  $('rGroup').textContent = opts.group || 'Tomlin Draw';
+  $('rHello').textContent = opts.hello || '';
+  $('rIntro').textContent = opts.intro || '';
+  $('rName').hidden = true; $('rBudget').hidden = true; $('rSecret').hidden = true;
+  $('rBtn').hidden = !opts.tap; $('rRetry').hidden = !opts.retry; $('rPaste').hidden = !opts.paste;
+}
+
+function showMember(token){
+  M.token = token; M.data = null;
+  show('mBody', false); $('mStage').classList.remove('compact');
+  stage({hello: 'One sec', intro: 'Loading your draw...'});
+  if (!token) return badLink();
+  api('GET', '/me?t=' + encodeURIComponent(token)).then(function(d){
+    if (M.token !== token) return;
+    M.data = d; renderMember(false);
+  }, function(err){
+    if (M.token !== token) return;
+    if (err.status === 404 || err.status === 401 || err.status === 403 || err.status === 400) return badLink();
+    stage({hello: 'Hmm', intro: err.message, retry: true});
+    $('rRetry').onclick = function(){ showMember(token); };
+  });
+}
+
+function badLink(){
+  stage({hello: 'Hmm', intro: 'That link is from the old version or didn\'t come through. Ask JJ for your new link.', paste: true});
+}
+
+function renderMember(animate){
+  var d = M.data, g = d.group || {}, me = d.me || {};
+  stage({group: g.name, hello: 'Hey ' + (me.name || 'there'), intro: 'Your name has been drawn. Ready?', tap: !me.revealed_at});
+  if (!me.revealed_at){
+    $('rBtn').onclick = function(){
+      me.revealed_at = new Date().toISOString();
+      renderMember(true);
+      api('POST', '/me/reveal?t=' + encodeURIComponent(M.token)).catch(function(){});
     };
     return;
   }
-  $('rPaste').hidden = true; $('rBtn').hidden = false;
-  $('rGroup').textContent = info.group;
-  $('rHello').textContent = 'Hey ' + info.giver;
-  $('rIntro').textContent = 'Your name has been drawn. Ready?';
-  $('rName').hidden = true; $('rSecret').hidden = true; $('rBudget').hidden = true;
-  $('rBtn').onclick = function(){
-    $('rIntro').textContent = 'You\'re buying for';
-    $('rName').textContent = info.receiver; $('rName').hidden = false; $('rName').classList.add('pop');
-    if (info.budget){ $('rBudget').textContent = 'Budget: ' + info.budget; $('rBudget').hidden = false; }
-    $('rBtn').hidden = true; $('rSecret').hidden = false;
-  };
+  var rec = d.receiver || {name: '?', wishes: []};
+  $('rIntro').textContent = 'You\'re buying for';
+  $('rName').textContent = rec.name; $('rName').hidden = false;
+  $('rName').classList.toggle('pop', !!animate);
+  var bits = [];
+  if (g.budget) bits.push('Budget: ' + g.budget);
+  if (daysText(g.days_left)) bits.push(daysText(g.days_left));
+  $('rBudget').textContent = bits.join(' · '); $('rBudget').hidden = !bits.length;
+  $('rSecret').hidden = false;
+  $('mStage').classList.add('compact');
+
+  // giftee's wishes
+  $('mTheirTitle').textContent = rec.name + '\'s wish list';
+  var list = $('mTheirList'); list.textContent = '';
+  (rec.wishes || []).forEach(function(w){
+    var li = el('li', null, w.text || w.url);
+    var href = safeHref(w.url);
+    if (href){ var a = el('a', null, hostOf(href)); a.href = href; a.target = '_blank'; a.rel = 'noopener'; li.appendChild(a); }
+    list.appendChild(li);
+  });
+  var none = !(rec.wishes && rec.wishes.length);
+  $('mTheirEmpty').textContent = rec.name + ' hasn\'t added wishes yet. Ask ' + pronoun(rec.name) + ' anonymously ↓';
+  show('mTheirEmpty', none); show('mTheirList', !none);
+  $('mAskTitle').textContent = 'Ask ' + rec.name + ' anonymously';
+
+  renderThread();
+  renderConfirm();
+  renderMyWishes(me.wishes || []);
+
+  var pairs = d.all_pairs || [];
+  var pl = $('mPairList'); pl.textContent = '';
+  pairs.forEach(function(p){ pl.appendChild(el('b', null, p.giver)); pl.appendChild(el('span', null, '→ ' + p.receiver)); });
+  show('mPairs', pairs.length > 0);
+  show('mBody', true);
 }
 
+function renderThread(){
+  var th = (M.data.thread || []).slice().sort(function(a, b){ return String(a.created_at).localeCompare(String(b.created_at)); });
+  var ask = $('mAskThread'), santa = $('mSantaThread'); ask.textContent = ''; santa.textContent = '';
+  var santaCount = 0;
+  th.forEach(function(m){
+    // mine+question / theirs+answer = me talking to my giftee; theirs+question / mine+answer = my Santa talking to me
+    var toGiftee = (m.kind === 'question') === !!m.mine;
+    var box = el('div', 'msg' + (m.mine ? ' mine' : ''));
+    var label = m.kind === 'question' ? (m.mine ? 'You asked' : 'Your Secret Santa asks:') : (m.mine ? 'You answered' : 'They answered');
+    box.appendChild(el('div', 'who', label));
+    box.appendChild(el('div', null, m.text));
+    if (!toGiftee && m.kind === 'question' && m.id){
+      santaCount++;
+      var wrap = el('div', 'answer');
+      var inp = el('input'); inp.type = 'text'; inp.id = 'mAns-' + m.id; inp.placeholder = 'Your answer'; inp.maxLength = 500;
+      var go = btn('mAnsGo-' + m.id, 'Answer');
+      go.onclick = function(){ sendAnswer(m.id, inp, go); };
+      inp.onkeydown = function(e){ if (e.key === 'Enter') sendAnswer(m.id, inp, go); };
+      wrap.appendChild(inp); wrap.appendChild(go); box.appendChild(wrap);
+    }
+    (toGiftee ? ask : santa).appendChild(box);
+  });
+  show('mSanta', santaCount > 0);
+}
+
+function pushMsg(kind, text){
+  M.data.thread = M.data.thread || [];
+  M.data.thread.push({id: '', kind: kind, text: text, created_at: new Date().toISOString(), mine: true});
+  renderThread();
+}
+
+function sendQuestion(){
+  var t = $('mAskText').value.trim(); setErr('mAskErr', '');
+  if (!t) return;
+  var b = $('mAskGo'); b.disabled = true;
+  api('POST', '/me/question?t=' + encodeURIComponent(M.token), {text: t}).then(function(){
+    $('mAskText').value = ''; pushMsg('question', t); toast('Sent anonymously');
+  }, function(err){ setErr('mAskErr', err.message); }).then(function(){ b.disabled = false; });
+}
+
+function sendAnswer(id, inp, go){
+  var t = inp.value.trim(); if (!t) return;
+  go.disabled = true;
+  api('POST', '/me/answer?t=' + encodeURIComponent(M.token), {message_id: id, text: t}).then(function(){
+    pushMsg('answer', t); toast('Answer sent');
+  }, function(err){ go.disabled = false; toast(err.message); });
+}
+
+function renderConfirm(){
+  var on = !!M.data.me.confirmed_at, b = $('mConfirm');
+  b.classList.toggle('done', on);
+  b.textContent = on ? 'Bought it ✓ (tap to undo)' : 'I bought it';
+  show('mConfirmNote', on);
+}
+function toggleConfirm(){
+  var me = M.data.me, b = $('mConfirm'); setErr('mConfirmErr', '');
+  b.disabled = true;
+  api(me.confirmed_at ? 'DELETE' : 'POST', '/me/confirm?t=' + encodeURIComponent(M.token)).then(function(r){
+    me.confirmed_at = (r && r.confirmed_at) || null; renderConfirm();
+  }, function(err){ setErr('mConfirmErr', err.message); }).then(function(){ b.disabled = false; });
+}
+
+// my wishes: each row keeps its server id on the element; autosave PUTs the full list
+function renderMyWishes(wishes){
+  var box = $('mWishes'); box.textContent = '';
+  wishes.forEach(function(w){ addWishRow(w); });
+  if (!wishes.length) addWishRow(null);
+  M.lastSaved = JSON.stringify(collectWishes().list);
+  updateAddBtn();
+}
+function addWishRow(w){
+  var n = ++M.wishSeq;
+  var row = el('div', 'wish-row'); row.dataset.id = (w && w.id) || '';
+  var f = el('div', 'f');
+  var t = el('input'); t.type = 'text'; t.id = 'wText-' + n; t.placeholder = 'A thing you\'d like'; t.maxLength = 200; t.value = (w && w.text) || '';
+  t.setAttribute('aria-label', 'Wish');
+  var u = el('input'); u.type = 'url'; u.id = 'wUrl-' + n; u.placeholder = 'Link (optional)'; u.value = (w && w.url) || '';
+  u.setAttribute('aria-label', 'Link'); u.autocapitalize = 'off';
+  f.appendChild(t); f.appendChild(u);
+  var x = btn('wDel-' + n, '×', 'x'); x.setAttribute('aria-label', 'Remove wish'); x.style.height = '46px';
+  x.onclick = function(){ row.remove(); if (!$('mWishes').children.length) addWishRow(null); updateAddBtn(); queueSave(); };
+  row.appendChild(f); row.appendChild(x); $('mWishes').appendChild(row);
+  return t;
+}
+function updateAddBtn(){ $('mAddWish').disabled = $('mWishes').children.length >= MAX_WISHES; }
+function collectWishes(){
+  var list = [], rows = [];
+  Array.prototype.forEach.call($('mWishes').children, function(row){
+    var ins = row.querySelectorAll('input'), text = ins[0].value.trim(), url = ins[1].value.trim();
+    if (!url && looksLikeUrl(text)) url = text;           // pasted a bare URL into the thing box
+    if (!text && !url) return;
+    var w = {text: text || url}; if (url) w.url = url; if (row.dataset.id) w.id = row.dataset.id;
+    list.push(w); rows.push(row);
+  });
+  return {list: list, rows: rows};
+}
+function queueSave(){ clearTimeout(M.saveT); M.saveT = setTimeout(saveWishes, 400); }
+function saveWishes(){
+  if (M.saving){ M.again = true; return; }
+  var c = collectWishes(), key = JSON.stringify(c.list);
+  if (key === M.lastSaved) return;
+  M.saving = true; setErr('mWishErr', '');
+  api('PUT', '/me/wishes?t=' + encodeURIComponent(M.token), c.list).then(function(saved){
+    saved = Array.isArray(saved) ? saved : [];
+    c.rows.forEach(function(row, i){ if (saved[i] && saved[i].id) row.dataset.id = saved[i].id; });
+    M.data.me.wishes = saved;
+    M.lastSaved = JSON.stringify(collectWishes().list);
+    toast('Saved');
+  }, function(err){ setErr('mWishErr', err.message); }).then(function(){
+    M.saving = false;
+    if (M.again){ M.again = false; saveWishes(); }
+  });
+}
+
+// ---------- admin view ----------
+var A = {token: '', data: null, spoilers: false};
+
+function showAdmin(token){
+  A.token = token; A.spoilers = false;
+  $('aTitle').textContent = 'Loading...'; $('aSub').textContent = ''; $('aStats').textContent = ''; $('aList').textContent = '';
+  show('aMatchBox', false); setErr('aErr', '');
+  loadAdmin();
+}
+function aq(){ return '?a=' + encodeURIComponent(A.token); }
+function loadAdmin(){
+  var token = A.token;
+  return api('GET', '/admin' + aq() + (A.spoilers ? '&spoilers=1' : '')).then(function(d){
+    if (A.token !== token) return;
+    A.data = d; renderAdmin(); return true;
+  }, function(err){
+    if (A.token !== token) return;
+    if (!A.data) $('aTitle').textContent = err.status === 0 ? 'Can\'t connect' : 'Dashboard not found';
+    setErr('aErr', err.status === 404 || err.status === 403 ? 'That dashboard link isn\'t valid. Check you copied the whole thing.' : err.message);
+    return false;
+  });
+}
+
+function renderAdmin(){
+  var d = A.data, g = d.group || {}, mems = d.members || [];
+  setErr('aErr', '');
+  $('aTitle').textContent = g.name || 'Your draw';
+  var sub = [];
+  if (g.exchange_date) sub.push(g.exchange_date);
+  if (daysText(g.days_left)) sub.push(daysText(g.days_left));
+  if (g.budget) sub.push('Budget ' + g.budget);
+  $('aSub').textContent = sub.join(' · ');
+
+  var count = function(k){ return mems.filter(function(m){ return k === 'wish' ? m.wish_count > 0 : !!m[k]; }).length; };
+  var stats = $('aStats'); stats.textContent = '';
+  [['Opened', count('link_opened_at')], ['Revealed', count('revealed_at')], ['Bought', count('confirmed_at')], ['Have wishes', count('wish')]]
+    .forEach(function(s){ stats.appendChild(el('span', 'pill', s[0] + ' ' + s[1] + '/' + mems.length)); });
+  stats.appendChild(el('span', 'pill' + (d.pending_texts ? ' off' : ''), (d.pending_texts || 0) + ' texts pending'));
+
+  var anyRevealed = count('revealed_at') > 0;
+  $('aRedraw').disabled = anyRevealed;
+  $('aRedraw').title = anyRevealed ? 'Someone already looked, so no redraw' : '';
+  $('aSpoilers').textContent = A.spoilers ? 'Hide matches' : 'Show matches';
+  $('aRevealAll').disabled = !!g.reveal_all_at;
+  $('aRevealAll').textContent = g.reveal_all_at ? 'Revealed to all' : 'Reveal all';
+
+  var ma = $('aMatches'); ma.textContent = '';
+  (d.assignments || []).forEach(function(p){ ma.appendChild(el('b', null, p.giver)); ma.appendChild(el('span', null, '→ ' + p.receiver)); });
+  show('aMatchBox', A.spoilers && !!(d.assignments && d.assignments.length));
+
+  var list = $('aList'); list.textContent = '';
+  mems.forEach(function(m){ list.appendChild(memberCard(m)); });
+}
+
+function memberCard(m){
+  var c = el('div', 'mcard');
+  var top = el('div', 'top');
+  top.appendChild(el('span', 'nm', m.name));
+  top.appendChild(el('span', 'pill' + (m.confirmed_at ? '' : ' off'), m.confirmed_at ? 'Bought' : 'Not yet'));
+  c.appendChild(top);
+  var kv = el('dl', 'kv');
+  var lt = m.last_text ? (m.last_text.kind + ', ' + fmtWhen(m.last_text.sent_at)) : '—';
+  [['Phone', m.phone || 'none (send by hand)'], ['Opened', fmtWhen(m.link_opened_at)], ['Revealed', fmtWhen(m.revealed_at)],
+   ['Wishes', String(m.wish_count || 0)], ['Bought', fmtWhen(m.confirmed_at)], ['Last text', lt]]
+    .forEach(function(p){ kv.appendChild(el('dt', null, p[0])); kv.appendChild(el('dd', null, p[1])); });
+  c.appendChild(kv);
+
+  var row = el('div', 'row');
+  var cp = btn('aCopy-' + m.id, 'Copy link');
+  cp.onclick = function(){ copy(m.link || ''); };
+  var rs = btn('aResend-' + m.id, 'Resend link');
+  rs.disabled = !m.phone;
+  rs.onclick = function(){
+    rs.disabled = true;
+    api('POST', '/admin/resend/' + encodeURIComponent(m.id) + aq()).then(function(){
+      toast('Queued for ' + m.name); loadAdmin();
+    }, function(err){ rs.disabled = false; setErr('aErr', err.message); });
+  };
+  var ed = btn('aEdit-' + m.id, 'Edit phone');
+  row.appendChild(cp); row.appendChild(rs); row.appendChild(ed);
+  c.appendChild(row);
+
+  var edit = el('div', 'edit'); edit.hidden = true;
+  var ph = el('input'); ph.type = 'tel'; ph.id = 'aPhone-' + m.id; ph.value = m.phone || ''; ph.placeholder = 'Phone'; ph.setAttribute('aria-label', 'Phone for ' + m.name);
+  ph.onblur = function(){ ph.value = fmtPhone(ph.value); };
+  var sv = btn('aSave-' + m.id, 'Save');
+  sv.onclick = function(){
+    var v = fmtPhone(ph.value); ph.value = v;
+    if (!validPhone(v)) return setErr('aErr', 'That phone doesn\'t look right. Use 10 digits, or leave it blank.');
+    sv.disabled = true;
+    api('PUT', '/admin/member/' + encodeURIComponent(m.id) + aq(), {name: m.name, phone: v || null}).then(function(){
+      toast('Saved'); loadAdmin();
+    }, function(err){ sv.disabled = false; setErr('aErr', err.message); });
+  };
+  edit.appendChild(ph); edit.appendChild(sv);
+  ed.onclick = function(){ edit.hidden = !edit.hidden; if (!edit.hidden) ph.focus(); };
+  c.appendChild(edit);
+  return c;
+}
+
+function adminAction(id, path, ask, okMsg){
+  if (!confirm(ask)) return;
+  var b = $(id); b.disabled = true;
+  api('POST', path + aq()).then(function(){ toast(okMsg); return loadAdmin(); }, function(err){
+    b.disabled = false; setErr('aErr', err.message);
+  });
+}
+
+// ---------- routing + boot ----------
 function route(){
   var h = location.hash.replace(/^#/, '');
-  if (/^r/i.test(h)) { showReveal(h.slice(1)); return; }
-  $('reveal').hidden = true; $('organizer').hidden = false;
+  var kind = h.charAt(0).toLowerCase(), token = h.slice(1);
+  show('setup', false); show('member', false); show('admin', false);
+  if (kind === 'r'){ show('member', true); showMember(token); }
+  else if (kind === 'a' && token){ show('admin', true); showAdmin(token); }
+  else { show('setup', true); showSetup(); }
+  window.scrollTo(0, 0);
 }
 
-// ---------- boot ----------
 (function(){
-  var saved = null;
-  try { saved = JSON.parse(localStorage.getItem('tomlin-draw') || 'null'); } catch (e) {}
-  var names = (saved && saved.pairs) ? saved.pairs.map(function(p){ return p.giver; }) : DEFAULT_NAMES;
-  names.forEach(addName);
-  if (saved){ $('group').value = saved.group || $('group').value; $('budget').value = saved.budget || ''; }
-  $('add').onclick = function(){ addName('').focus(); };
+  var y = new Date().getFullYear();
+  $('exchangeDate').value = y + '-12-25';
+  $('group').value = 'Christmas ' + y;
+  fillNames(DEFAULT_NAMES, null);
+  $('add').onclick = function(){ addName('', '').focus(); };
   $('draw').onclick = runDraw;
-  $('redraw').onclick = function(){ runDraw(); };
-  if (saved && saved.pairs) render(saved);
+  $('sNew').onclick = function(){ show('sDone', false); show('sForm', true); showSetup(); window.scrollTo(0, 0); };
+
+  $('rGo').onclick = function(){
+    var v = $('rCode').value.trim(), m = v.match(/#r([A-Za-z0-9_-]+)/);
+    v = m ? m[1] : v.replace(/^#?r/i, '').replace(/[^A-Za-z0-9_-]/g, '');
+    if (v) location.hash = 'r' + v;
+  };
+  $('mAskGo').onclick = sendQuestion;
+  $('mConfirm').onclick = toggleConfirm;
+  $('mAddWish').onclick = function(){
+    if ($('mWishes').children.length >= MAX_WISHES) return;
+    addWishRow(null).focus(); updateAddBtn();
+  };
+  $('mWishes').addEventListener('focusout', function(e){ if (e.target.tagName === 'INPUT') queueSave(); });
+
+  $('aRefresh').onclick = function(){ loadAdmin().then(function(ok){ if (ok) toast('Up to date'); }); };
+  $('aSpoilers').onclick = function(){ A.spoilers = !A.spoilers; loadAdmin(); };
+  $('aRedraw').onclick = function(){ adminAction('aRedraw', '/admin/redraw', 'Redraw everyone? Banjo texts everyone their link again.', 'Redrawn'); };
+  $('aRevealAll').onclick = function(){ adminAction('aRevealAll', '/admin/reveal-all', 'Show everyone who had who? Only do this after the exchange.', 'Revealed to everyone'); };
+
   window.addEventListener('hashchange', route);
   route();
 })();

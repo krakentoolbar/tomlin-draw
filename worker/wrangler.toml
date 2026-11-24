@@ -1,0 +1,13 @@
+name = "tomlin-draw"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+PAGES_ORIGIN = "https://krakentoolbar.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tomlin-draw"
+database_id = "b49f5d11-52f4-485e-b77c-9a649876c452"
+
+# Secrets (wrangler secret put): BANJO_KEY
