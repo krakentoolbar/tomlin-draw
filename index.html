@@ -110,7 +110,37 @@ button.x{width:42px;padding:0;color:var(--muted);flex:none}
 .paste{margin-top:14px;text-align:left}
 .wl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .wl li{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere}
-.wl li a{display:block;font-size:.85rem;margin-top:2px}
+.wl li.bought .wv-t{text-decoration:line-through;opacity:.6}
+/* wish view: optional 56px preview thumb + title / own text / site */
+.wv{display:flex;gap:10px;align-items:flex-start;min-width:0;text-align:left}
+.wv-img{width:56px;height:56px;flex:none;border-radius:8px;object-fit:cover;background:var(--line);display:block}
+.wv-b{flex:1;min-width:0}
+.wv-t{display:block;font-weight:500;color:var(--fg);overflow-wrap:anywhere}
+a.wv-t{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.wv-s{font-size:.85rem;color:var(--muted);margin-top:2px}
+.wv-site,.wv-pend{font-size:.78rem;color:var(--muted);margin-top:2px}
+.wv-pend{font-style:italic}
+.tag{display:inline-block;margin-top:6px;background:var(--pine-soft);color:var(--pine);font-size:.75rem;padding:2px 8px;border-radius:999px;font-weight:500}
+.wacts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.wish-pv{margin-top:2px}
+.wish-pv .wv-img{width:40px;height:40px}
+/* Touchdown picker (inline, expands under #mConfirm) */
+.bought-what{margin-top:10px;font-weight:500;text-align:center;overflow-wrap:anywhere}
+.pick{margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.pick-q{font-weight:700;margin-bottom:10px}
+.pick-list{display:flex;flex-direction:column;gap:8px}
+.pick-opt{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;background:var(--card)}
+.pick-opt input{flex:none;width:20px;height:20px;margin:0;accent-color:var(--accent)}
+.pick-opt:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.pick-opt.taken{opacity:.55;cursor:not-allowed}
+.pick #mPickNote{margin-top:10px}
+.pick .primary{margin-top:12px}
+.pick .ghost{width:100%;margin-top:4px}
+/* Everyone's lists */
+.fam{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.fam .wl{margin-top:10px}
+.fam .hint{margin-top:6px}
+.fadd{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .wish-row{display:flex;gap:8px;align-items:flex-start}
 .wish-row .f{flex:1;display:flex;flex-direction:column;gap:6px}
 .wish-row input[type=url]{font-size:.9rem;padding:8px 12px}
@@ -356,16 +386,24 @@ button.x{width:42px;padding:0;color:var(--muted);flex:none}
   </div>
 
   <div id="mBody" hidden>
-    <section id="mSanta" hidden>
-      <h2>Your Secret Santa asks</h2>
-      <p class="hint">You won't see who's asking. Answer and Banjo lets them know.</p>
-      <div class="thread" id="mSantaThread"></div>
-    </section>
-
     <section>
       <h2 id="mTheirTitle">Their wish list</h2>
       <ul class="wl" id="mTheirList"></ul>
       <p class="hint" id="mTheirEmpty" hidden></p>
+    </section>
+
+    <section id="mConfirmSec">
+      <button type="button" class="primary" id="mConfirm" aria-controls="mPick" aria-expanded="false">🏈 Touchdown! I bought it</button>
+      <p class="bought-what" id="mBoughtWhat" hidden></p>
+      <div class="pick" id="mPick" hidden>
+        <p class="pick-q" id="mPickQ">Which one did you get?</p>
+        <div class="pick-list" id="mPickList" role="radiogroup" aria-labelledby="mPickQ"></div>
+        <input type="text" id="mPickNote" maxlength="200" placeholder="What'd you get?" aria-label="What you got" hidden>
+        <button type="button" class="primary" id="mPickGo" disabled>Confirm touchdown</button>
+        <button type="button" class="ghost" id="mPickCancel">Cancel</button>
+      </div>
+      <p class="note" id="mConfirmNote" hidden>Nice. Banjo will stop texting you.</p>
+      <div id="mConfirmErr" class="err" hidden></div>
     </section>
 
     <section id="mAsk">
@@ -377,10 +415,10 @@ button.x{width:42px;padding:0;color:var(--muted);flex:none}
       <div class="thread" id="mAskThread"></div>
     </section>
 
-    <section>
-      <button type="button" class="primary" id="mConfirm">I bought it</button>
-      <p class="note" id="mConfirmNote" hidden>Nice. Banjo will stop texting you.</p>
-      <div id="mConfirmErr" class="err" hidden></div>
+    <section id="mSanta" hidden>
+      <h2>Your Secret Santa asks</h2>
+      <p class="hint">You won't see who's asking. Answer and Banjo lets them know.</p>
+      <div class="thread" id="mSantaThread"></div>
     </section>
 
     <section>
@@ -389,6 +427,15 @@ button.x{width:42px;padding:0;color:var(--muted);flex:none}
       <div class="wishes" id="mWishes"></div>
       <div class="row" style="margin-top:10px"><button type="button" class="small" id="mAddWish">+ Add a wish</button></div>
       <div id="mWishErr" class="err" hidden></div>
+    </section>
+
+    <section id="mFamilySec">
+      <h2>Everyone's lists</h2>
+      <p class="hint">See what everyone wants and what's already covered, in case you want to grab an extra gift.</p>
+      <button type="button" class="primary" id="mFamilyBtn" aria-controls="mFamily" aria-expanded="false" style="margin-top:12px">See everyone's lists</button>
+      <div class="row" id="mFamilyBar" style="margin-top:8px;justify-content:flex-end" hidden><button type="button" class="ghost" id="mFamilyRefresh">Refresh</button></div>
+      <div id="mFamilyErr" class="err" hidden></div>
+      <div class="fam" id="mFamily" hidden></div>
     </section>
 
     <section id="mPairs" hidden>
@@ -447,7 +494,7 @@ function load(){ try { return JSON.parse(localStorage.getItem(STORE) || 'null');
 function save(v){ try { localStorage.setItem(STORE, JSON.stringify(v)); } catch (e) {} }
 
 function api(method, path, body){
-  if (DEMO && path.indexOf('/me') === 0) return demoApi(method, path, body);
+  if (DEMO && /^\/(me|family|wish)\b/.test(path)) return demoApi(method, path, body);
   var opts = {method: method, headers: {}};
   if (body !== undefined){ opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
   return fetch(API + path, opts).then(function(res){
@@ -508,6 +555,37 @@ function safeHref(u){
 }
 function hostOf(u){ try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
 function looksLikeUrl(s){ return /^(https?:\/\/|www\.)\S+$/i.test(String(s || '').trim()); }
+function tq(){ return '?t=' + encodeURIComponent(M.token); }
+
+// ---------- wish view (link previews) ----------
+// One renderer for every wish: my list (editor decoration), giftee's list, family view, picker.
+// /family rows carry no preview_status, so a preview_title/preview_image there counts as 'ok'.
+function pvStatus(w){ return w.preview_status || (w.preview_title || w.preview_image ? 'ok' : null); }
+function imgSrc(u){ u = String(u || '').trim(); return /^https?:\/\//i.test(u) || /^data:image\//i.test(u) ? u : ''; }
+function wishText(w){ return String(w.text || w.url || '').trim(); }
+function wishTitle(w){ return pvStatus(w) === 'ok' && w.preview_title ? String(w.preview_title) : wishText(w); }
+function wishView(w, opts){
+  opts = opts || {};
+  var href = safeHref(w.url), st = pvStatus(w), ok = st === 'ok', text = wishText(w), title = wishTitle(w);
+  if (opts.editor && !(ok || (st === 'pending' && href))) return null;
+  var box = el('div', 'wv'), src = ok ? imgSrc(w.preview_image) : '';
+  if (src){
+    var img = el('img', 'wv-img'); img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; img.referrerPolicy = 'no-referrer';
+    img.onerror = function(){ img.remove(); }; img.src = src; box.appendChild(img);
+  }
+  var b = el('div', 'wv-b');
+  if (!opts.editor || ok){
+    var t = el(href && !opts.nolink ? 'a' : 'span', 'wv-t', title);
+    if (t.tagName === 'A'){ t.href = href; t.target = '_blank'; t.rel = 'noopener'; }
+    b.appendChild(t);
+    if (!opts.editor && ok && text && text !== title && text !== String(w.url || '').trim()) b.appendChild(el('div', 'wv-s', text));
+  }
+  var site = (ok && w.preview_site) ? String(w.preview_site) : (href ? hostOf(href) : '');
+  if (site && (!opts.editor || ok)) b.appendChild(el('div', 'wv-site', site));
+  if (st === 'pending' && href) b.appendChild(el('div', 'wv-pend', 'fetching preview…'));
+  box.appendChild(b);
+  return box;
+}
 
 // ---------- setup view ----------
 var nameSeq = 0;
@@ -634,7 +712,7 @@ var THEMES = {
     eyebrow: '♥ Joyeux Noël, {name} ♥', hello: 'Bonjour, mon cœur',
     intro: 'Près de moi, près de moi... your name has been drawn.', tap: 'Révélez, s\'il vous plaît ♥',
     buying: 'C\'est magnifique. You\'re buying for', secret: 'Tell no one. Discretion is so chic. That\'s all.',
-    bought: 'Je l\'ai acheté ♥', done: 'Acheté ✓ (tap to undo)', boughtNote: 'Magnifique. Banjo will stop texting you. That\'s all.',
+    bought: 'Je l\'ai acheté ♥ (I bought it)', done: 'Acheté ✓ (tap to undo)', boughtNote: 'Magnifique. Banjo will stop texting you. That\'s all.',
     tagline: 'Florals for Christmas? Groundbreaking.'
   },
   micah: {
@@ -670,7 +748,7 @@ var THEMES = {
     eyebrow: '🎮 Press Start · {group}', hello: 'Grizzlymint.',
     intro: 'Player 1, your name has been drawn. Fore!', tap: 'Press A to reveal',
     buying: 'New objective: buy for', secret: 'Stealth mode. Even Master Chief can\'t see this.',
-    bought: 'Unlock: Gift bought (20G)', done: '🏆 Achievement unlocked ✓ (tap to undo)', boughtNote: 'Achievement unlocked: Gift bought (20G). Banjo will stop texting you.',
+    bought: 'Unlock: I bought it (20G)', done: '🏆 Achievement unlocked ✓ (tap to undo)', boughtNote: 'Achievement unlocked: Gift bought (20G). Banjo will stop texting you.',
     tagline: 'Fairway. Green. Gift. Nothing else matters. 🤘'
   },
   sarah: {
@@ -800,31 +878,93 @@ function buildCollage(m, dir){
 
 // ---------- demo preview (#demo-<name>, e.g. #demo-kait) ----------
 // DEMO PAYLOAD: fake /me data so the organizer can preview anyone's themed page. Never touches the API.
-var DEMO = false;
+var DEMO = false, DEMO_FAM = null, DEMO_SEQ = 0;
+function demoImg(bg, glyph){
+  return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="112" height="112"><rect width="112" height="112" fill="' + bg + '"/><text x="56" y="76" font-size="58" text-anchor="middle">' + glyph + '</text></svg>');
+}
 function demoMe(key){
   var name = DEFAULT_NAMES.filter(function(n){ return lc(n) === key; })[0] || (key.charAt(0).toUpperCase() + key.slice(1));
   return {
     group: {name: 'Christmas 2026', budget: '$50', days_left: 31},
-    me: {name: name, revealed_at: null, confirmed_at: null, wishes: []},
+    me: {name: name, revealed_at: null, confirmed_at: null, bought_wish_id: null, bought_note: null, wishes: [
+      {id: 'dm1', text: 'Noise-cancelling headphones', url: 'https://www.amazon.com/dp/B08PZHYWJS', preview_status: 'ok',
+        preview_title: 'Apple AirPods Max Wireless Over-Ear Headphones', preview_image: demoImg('#c9d6df', '🎧'), preview_site: 'Amazon.com'},
+      {id: 'dm2', text: 'Coffee beans, anything dark', url: null, preview_status: null}]},
     receiver: {name: key === 'sonja' ? 'Kait' : 'Sonja', wishes: [
-      {id: 'demo1', text: 'Cozy wool socks'}, {id: 'demo2', text: 'A good mystery novel', url: 'https://example.com'}]},
+      {id: 'demo1', text: 'Cozy wool socks', url: 'https://www.amazon.com/dp/B07CQ7R8VJ', preview_status: 'ok',
+        preview_title: 'Smartwool Hike Classic Edition Full Cushion Crew Socks', preview_image: demoImg('#e8d3c0', '🧦'), preview_site: 'Amazon.com', bought: null},
+      {id: 'demo2', text: 'A good mystery novel', url: 'https://example.com', preview_status: 'failed', bought: null},
+      {id: 'demo3', text: 'Bluetooth speaker', url: 'https://www.target.com/p/speaker', preview_status: 'pending', bought: null},
+      {id: 'demo4', text: 'A big candle (any scent)', url: null, preview_status: null, bought: {kind: 'extra', mine: false}}]},
     thread: [], all_pairs: []
   };
 }
+function demoFamily(){
+  var me = M.data.me, rec = M.data.receiver, now = new Date().toISOString();
+  if (!DEMO_FAM){
+    var o = DEFAULT_NAMES.filter(function(n){ return lc(n) !== lc(me.name) && lc(n) !== lc(rec.name); });
+    DEMO_FAM = {group: {name: 'Christmas 2026', year: 2026, budget: '$50', exchange_date: '2026-12-25', days_left: 31}, viewer_id: 'demo-me', members: [
+      {id: 'demo-rec', name: rec.name, confirmed: false, wishes: rec.wishes.map(function(w){
+        return Object.assign({}, w, {bought: w.bought ? {kind: w.bought.kind, by_name: w.bought.kind === 'extra' ? o[0] : null, at: now} : null});
+      })},
+      {id: 'demo-o1', name: o[0], confirmed: true, wishes: [
+        {id: 'demo-o1a', text: 'Yeti tumbler', url: 'https://www.amazon.com/dp/B073WJFM8T', preview_title: 'YETI Rambler 20 oz Tumbler, Stainless Steel', preview_image: demoImg('#2f4f6f', '🥤'), preview_site: 'Amazon.com', bought: {kind: 'santa', by_name: null, at: now}},
+        {id: 'demo-o1b', text: 'Golf balls (Pro V1)', url: null, bought: {kind: 'extra', by_name: o[1], at: now}},
+        {id: 'demo-o1c', text: 'Fleece quarter-zip, size L', url: 'https://www.patagonia.com/product/better-sweater', preview_title: 'Men\'s Better Sweater 1/4-Zip Fleece', preview_image: demoImg('#6b7f5e', '🧥'), preview_site: 'Patagonia', bought: null}]},
+      {id: 'demo-o2', name: o[1], confirmed: false, wishes: [
+        {id: 'demo-o2a', text: 'Kindle Paperwhite', url: 'https://www.amazon.com/dp/B0CFPJYX7P', preview_title: 'Amazon Kindle Paperwhite (16 GB)', preview_image: demoImg('#1d2a33', '📖'), preview_site: 'Amazon.com', bought: {kind: 'extra', by_name: me.name, at: now}},
+        {id: 'demo-o2b', text: 'Board game night stuff', url: null, bought: null}]},
+      {id: 'demo-me', name: me.name, confirmed: false, wishes: []}
+    ]};
+  }
+  var m0 = DEMO_FAM.members[0], mine = DEMO_FAM.members[3];
+  m0.confirmed = !!me.confirmed_at;
+  m0.wishes.forEach(function(w){
+    if (w.bought && w.bought.kind === 'santa') w.bought = null;
+    if (me.bought_wish_id && w.id === me.bought_wish_id) w.bought = {kind: 'santa', by_name: null, at: now};
+  });
+  mine.wishes = (me.wishes || []).map(function(w){ return Object.assign({}, w, {bought: null}); });
+  return JSON.parse(JSON.stringify(DEMO_FAM));
+}
+function demoErr(status, msg){ var e = new Error(msg); e.status = status; return Promise.reject(e); }
 function demoApi(method, path, body){
-  var r = {};
-  if (path.indexOf('/me/confirm') === 0) r = method === 'POST' ? {confirmed_at: new Date().toISOString()} : {};
-  else if (path.indexOf('/me/wishes') === 0) r = (body || []).map(function(w, i){ return Object.assign({id: w.id || 'demo-w' + i}, w); });
+  var r = {}, me = M.data.me, now = new Date().toISOString(), m;
+  if (path.indexOf('/me/confirm') === 0) r = method === 'POST' ? {confirmed_at: now} : {};
+  else if (path.indexOf('/me/wishes') === 0){
+    var prev = {}; (me.wishes || []).forEach(function(p){ prev[p.id] = p; });
+    r = (body || []).map(function(w){
+      var p = w.id && prev[w.id], keep = p && p.url === w.url
+        ? {preview_status: p.preview_status, preview_title: p.preview_title, preview_image: p.preview_image, preview_site: p.preview_site}
+        : {preview_status: w.url ? 'pending' : null};
+      return Object.assign({id: w.id || 'demo-w' + (++DEMO_SEQ)}, w, keep);
+    });
+  }
+  else if (path.indexOf('/family') === 0) r = demoFamily();
+  else if (path.indexOf('/wish/extra') === 0){
+    demoFamily();
+    var tgt = DEMO_FAM.members.filter(function(x){ return x.id === body.member_id; })[0];
+    if (!tgt) return demoErr(404, 'Not found');
+    tgt.wishes.push({id: 'demo-x' + (++DEMO_SEQ), text: body.text, url: body.url || null, preview_status: body.url ? 'pending' : null, bought: {kind: 'extra', by_name: me.name, at: now}});
+  }
+  else if ((m = path.match(/^\/wish\/([^/?]+)\/bought/))){
+    demoFamily();
+    var w = null;
+    DEMO_FAM.members.forEach(function(x){ if (x.id !== DEMO_FAM.viewer_id) x.wishes.forEach(function(y){ if (y.id === decodeURIComponent(m[1])) w = y; }); });
+    if (!w) return demoErr(403, 'You can\'t mark your own list.');
+    var byMe = w.bought && w.bought.kind === 'extra' && w.bought.by_name === me.name;
+    if (method === 'POST'){ if (w.bought && !byMe) return demoErr(409, 'Someone already bought that one.'); w.bought = {kind: 'extra', by_name: me.name, at: now}; }
+    else { if (w.bought && !byMe) return demoErr(403, 'Only whoever bought it can undo it.'); w.bought = null; }
+  }
   return Promise.resolve(r);
 }
-function showDemo(key){
-  DEMO = true; M.token = 'demo'; M.data = demoMe(key);
+function showDemo(key, fam){
+  DEMO = true; DEMO_FAM = null; M.token = 'demo'; M.data = demoMe(key); M.openFamily = !!fam; resetFamily();
   show('mBody', false); $('mStage').classList.remove('compact');
   applyTheme(M.data.me.name); renderMember(false);
 }
 
 // ---------- member view ----------
-var M ={token: '', data: null, wishSeq: 0, saveT: null, saving: false, again: false, lastSaved: ''};
+var M ={token: '', data: null, wishSeq: 0, saveT: null, saving: false, again: false, lastSaved: '', openFamily: false};
 
 function stage(opts){
   $('rGroup').textContent = opts.group || 'Tomlin Draw';
@@ -834,8 +974,8 @@ function stage(opts){
   $('rBtn').hidden = !opts.tap; $('rRetry').hidden = !opts.retry; $('rPaste').hidden = !opts.paste;
 }
 
-function showMember(token){
-  M.token = token; M.data = null;
+function showMember(token, fam){
+  M.token = token; M.data = null; M.openFamily = !!fam; resetFamily();
   show('mBody', false); $('mStage').classList.remove('compact');
   stage({hello: 'One sec', intro: 'Loading your draw...'});
   if (!token) return badLink();
@@ -882,13 +1022,7 @@ function renderMember(animate){
 
   // giftee's wishes
   $('mTheirTitle').textContent = rec.name + '\'s wish list';
-  var list = $('mTheirList'); list.textContent = '';
-  (rec.wishes || []).forEach(function(w){
-    var li = el('li', null, w.text || w.url);
-    var href = safeHref(w.url);
-    if (href){ var a = el('a', null, hostOf(href)); a.href = href; a.target = '_blank'; a.rel = 'noopener'; li.appendChild(a); }
-    list.appendChild(li);
-  });
+  renderTheirList();
   var none = !(rec.wishes && rec.wishes.length);
   $('mTheirEmpty').textContent = rec.name + ' hasn\'t added wishes yet. Ask ' + pronoun(rec.name) + ' anonymously ↓';
   show('mTheirEmpty', none); show('mTheirList', !none);
@@ -903,6 +1037,27 @@ function renderMember(animate){
   pairs.forEach(function(p){ pl.appendChild(el('b', null, p.giver)); pl.appendChild(el('span', null, '→ ' + p.receiver)); });
   show('mPairs', pairs.length > 0);
   show('mBody', true);
+  if (M.openFamily){   // #r<token>/family deep link
+    M.openFamily = false; toggleFamily();
+    setTimeout(function(){ $('mFamilySec').scrollIntoView({block: 'start'}); }, 0);
+  }
+}
+
+function boughtTag(b, viewerName){
+  if (!b) return '';
+  if (b.mine) return b.kind === 'santa' ? '✓ You got this' : '✓ You got this as an extra';
+  if (b.kind === 'santa') return '✓ bought by their Santa';
+  if (b.by_name && lc(b.by_name) === lc(viewerName)) return '✓ bought by you (extra)';
+  return '✓ bought by ' + (b.by_name || 'someone else');
+}
+function renderTheirList(){
+  var list = $('mTheirList'); list.textContent = '';
+  (M.data.receiver.wishes || []).forEach(function(w){
+    var li = el('li', w.bought ? 'bought' : null);
+    li.appendChild(wishView(w));
+    if (w.bought) li.appendChild(el('span', 'tag', boughtTag(w.bought)));
+    list.appendChild(li);
+  });
 }
 
 function renderThread(){
@@ -953,19 +1108,190 @@ function sendAnswer(id, inp, go){
   }, function(err){ go.disabled = false; toast(err.message); });
 }
 
+// "Touchdown! I bought it": tap opens #mPick (which wish, or a note), confirm posts {wish_id} | {note} | {}.
+function recWishes(){ return (M.data.receiver && M.data.receiver.wishes) || []; }
+function boughtWhat(){
+  var me = M.data.me;
+  if (me.bought_wish_id){ var w = recWishes().filter(function(x){ return x.id === me.bought_wish_id; })[0]; if (w) return wishTitle(w); }
+  return me.bought_note || '';
+}
 function renderConfirm(){
-  var on = !!M.data.me.confirmed_at, b = $('mConfirm');
+  var me = M.data.me, on = !!me.confirmed_at, b = $('mConfirm');
+  closePick();
   b.classList.toggle('done', on);
-  b.textContent = on ? tx('done', 'Bought it ✓ (tap to undo)') : tx('bought', 'I bought it');
+  b.textContent = on ? tx('done', 'Bought it ✓ (tap to undo)') : tx('bought', '🏈 Touchdown! I bought it');
   $('mConfirmNote').textContent = tx('boughtNote', 'Nice. Banjo will stop texting you.');
   show('mConfirmNote', on);
+  var what = on ? boughtWhat() : '';
+  $('mBoughtWhat').textContent = what ? 'You got: ' + what : '';
+  show('mBoughtWhat', !!what);
 }
-function toggleConfirm(){
-  var me = M.data.me, b = $('mConfirm'); setErr('mConfirmErr', '');
+function onConfirmTap(){
+  setErr('mConfirmErr', '');
+  if (M.data.me.confirmed_at) return undoConfirm();
+  if ($('mPick').hidden) openPick(); else closePick();
+}
+function openPick(){
+  var rec = M.data.receiver || {}, wishes = recWishes(), list = $('mPickList'), me = M.data.me;
+  list.textContent = '';
+  $('mPickQ').textContent = 'Which one did you get ' + (rec.name || 'them') + '?';
+  wishes.forEach(function(w){
+    var taken = !!(w.bought && !w.bought.mine);
+    var lab = el('label', 'pick-opt' + (taken ? ' taken' : ''));
+    var r = el('input'); r.type = 'radio'; r.name = 'mPickWish'; r.value = w.id; r.id = 'mPickOpt-' + w.id; r.disabled = taken;
+    r.checked = !taken && w.id === me.bought_wish_id;
+    var v = wishView(w, {nolink: true});
+    if (taken) v.lastChild.appendChild(el('div', 'wv-pend', 'already bought by ' + (w.bought.by_name || (w.bought.kind === 'santa' ? 'their Santa' : 'someone else'))));
+    lab.appendChild(r); lab.appendChild(v); list.appendChild(lab);
+  });
+  var lab = el('label', 'pick-opt'), r = el('input');
+  r.type = 'radio'; r.name = 'mPickWish'; r.value = ''; r.id = 'mPickOpt-other';
+  lab.appendChild(r); lab.appendChild(el('span', 'wv-t', 'Something else'));
+  list.appendChild(lab);
+  show('mPickList', wishes.length > 0);
+  if (!wishes.length) r.checked = true;
+  $('mPickNote').value = me.bought_note || '';
+  show('mPick', true); $('mConfirm').setAttribute('aria-expanded', 'true');
+  syncPick();
+  if (!wishes.length) $('mPickNote').focus();
+}
+function closePick(){ show('mPick', false); $('mConfirm').setAttribute('aria-expanded', 'false'); }
+function pickedOpt(){ return document.querySelector('#mPickList input[name="mPickWish"]:checked'); }
+function syncPick(){
+  var p = pickedOpt(), other = !!p && p.value === '';
+  show('mPickNote', other);
+  $('mPickGo').disabled = !p;
+}
+function sendPick(){
+  var p = pickedOpt(); if (!p) return;
+  var me = M.data.me, wid = p.value || null, note = wid ? '' : $('mPickNote').value.trim().slice(0, 200);
+  var body = wid ? {wish_id: wid} : (note ? {note: note} : {});
+  var go = $('mPickGo'); go.disabled = true; setErr('mConfirmErr', '');
+  api('POST', '/me/confirm' + tq(), body).then(function(r){
+    me.confirmed_at = (r && r.confirmed_at) || new Date().toISOString();
+    me.bought_wish_id = wid; me.bought_note = note || null;
+    recWishes().forEach(function(w){
+      if (w.bought && w.bought.kind === 'santa') w.bought = null;
+      if (wid && w.id === wid) w.bought = {kind: 'santa', mine: true};
+    });
+    renderConfirm(); renderTheirList(); toast('Touchdown! 🏈');
+  }, function(err){ setErr('mConfirmErr', err.message); }).then(function(){ go.disabled = false; syncPick(); });
+}
+function undoConfirm(){
+  var me = M.data.me, b = $('mConfirm');
   b.disabled = true;
-  api(me.confirmed_at ? 'DELETE' : 'POST', '/me/confirm?t=' + encodeURIComponent(M.token)).then(function(r){
-    me.confirmed_at = (r && r.confirmed_at) || null; renderConfirm();
+  api('DELETE', '/me/confirm' + tq()).then(function(){
+    me.confirmed_at = null; me.bought_wish_id = null; me.bought_note = null;
+    recWishes().forEach(function(w){ if (w.bought && w.bought.kind === 'santa') w.bought = null; });
+    renderConfirm(); renderTheirList();
   }, function(err){ setErr('mConfirmErr', err.message); }).then(function(){ b.disabled = false; });
+}
+
+// ---------- everyone's lists (GET /family, fetched on first tap) ----------
+var F = {data: null, open: false, busy: false};
+function resetFamily(){
+  F.data = null; F.open = false; F.busy = false;
+  if (!$('mFamily')) return;
+  $('mFamily').textContent = ''; show('mFamily', false); show('mFamilyBar', false); setErr('mFamilyErr', '');
+  famBtn();
+}
+function famBtn(){
+  var b = $('mFamilyBtn');
+  b.textContent = F.busy && !F.data ? 'Loading…' : (F.open ? 'Hide everyone\'s lists' : 'See everyone\'s lists');
+  b.setAttribute('aria-expanded', String(F.open));
+}
+function toggleFamily(){
+  if (F.open){ F.open = false; show('mFamily', false); show('mFamilyBar', false); famBtn(); return; }
+  F.open = true; famBtn();
+  if (F.data){ show('mFamily', true); show('mFamilyBar', true); return; }
+  loadFamily();
+}
+function loadFamily(){
+  var token = M.token, b = $('mFamilyBtn');
+  F.busy = true; b.disabled = true; setErr('mFamilyErr', ''); famBtn();
+  return api('GET', '/family' + tq()).then(function(d){
+    if (M.token !== token) return;
+    F.data = d || {}; renderFamily();
+  }, function(err){
+    if (M.token !== token) return;
+    setErr('mFamilyErr', err.message); if (!F.data) F.open = false;
+  }).then(function(){ F.busy = false; b.disabled = false; famBtn(); });
+}
+function myName(){ return (M.data && M.data.me && M.data.me.name) || ''; }
+function renderFamily(){
+  var box = $('mFamily'), d = F.data, mems = (d.members || []).slice();
+  box.textContent = '';
+  mems.sort(function(a, b){ return (a.id === d.viewer_id) - (b.id === d.viewer_id); });   // you go last
+  mems.forEach(function(m){ box.appendChild(famCard(m, m.id === d.viewer_id)); });
+  if (!mems.length) box.appendChild(el('p', 'hint', 'Nobody\'s here yet.'));
+  show('mFamily', F.open); show('mFamilyBar', F.open);
+}
+function famCard(m, isMe){
+  var c = el('div', 'mcard'); c.id = 'mFam-' + m.id;
+  var top = el('div', 'top');
+  top.appendChild(el('span', 'nm', isMe ? 'You' : m.name));
+  if (!isMe && m.confirmed) top.appendChild(el('span', 'pill', 'main gift handled ✓'));
+  c.appendChild(top);
+  if (isMe) c.appendChild(el('p', 'hint', 'What\'s been bought for you stays hidden 🎁'));
+  var ws = m.wishes || [];
+  if (ws.length){
+    var ul = el('ul', 'wl');
+    ws.forEach(function(w){ ul.appendChild(famWish(w, isMe)); });
+    c.appendChild(ul);
+  } else c.appendChild(el('p', 'hint', isMe ? 'Your list is empty. Add wishes above.' : m.name + ' hasn\'t added wishes yet.'));
+  if (!isMe) c.appendChild(famAdd(m));
+  return c;
+}
+function famWish(w, isMe){
+  var b = isMe ? null : w.bought, li = el('li', b ? 'bought' : null);
+  li.appendChild(wishView(w));
+  if (isMe) return li;
+  var acts = el('div', 'wacts');
+  if (b){
+    acts.appendChild(el('span', 'tag', boughtTag(b, myName())));
+    if (b.kind === 'extra' && b.by_name && lc(b.by_name) === lc(myName())){
+      var u = btn('mFamUndo-' + w.id, 'Undo', 'ghost small');
+      u.onclick = function(){ markExtra(w, false, u); };
+      acts.appendChild(u);
+    }
+  } else {
+    var k = btn('mFamBuy-' + w.id, 'I bought this (extra gift)');
+    k.onclick = function(){ markExtra(w, true, k); };
+    acts.appendChild(k);
+  }
+  li.appendChild(acts);
+  return li;
+}
+function markExtra(w, on, b){
+  b.disabled = true; setErr('mFamilyErr', '');
+  api(on ? 'POST' : 'DELETE', '/wish/' + encodeURIComponent(w.id) + '/bought' + tq()).then(function(){
+    w.bought = on ? {kind: 'extra', by_name: myName(), at: new Date().toISOString()} : null;
+    renderFamily(); toast(on ? 'Marked as bought' : 'Unmarked');
+  }, function(err){
+    b.disabled = false; setErr('mFamilyErr', err.message);
+    if (err.status === 409) loadFamily().then(function(){ setErr('mFamilyErr', err.message); });
+  });
+}
+function famAdd(m){
+  var wrap = el('div');
+  var open = btn('mFamAdd-' + m.id, '+ Add something else you bought for ' + m.name, 'ghost small');
+  open.style.paddingLeft = '0';
+  var f = el('div', 'fadd'); f.hidden = true;
+  var t = el('input'); t.type = 'text'; t.id = 'mFamXText-' + m.id; t.maxLength = 200; t.placeholder = 'What\'d you get?'; t.setAttribute('aria-label', 'What you got ' + m.name);
+  var u = el('input'); u.type = 'url'; u.id = 'mFamXUrl-' + m.id; u.placeholder = 'Link (optional)'; u.autocapitalize = 'off'; u.setAttribute('aria-label', 'Link');
+  var go = btn('mFamXGo-' + m.id, 'Add it');
+  go.onclick = function(){
+    var text = t.value.trim(), url = u.value.trim(); if (!text) return t.focus();
+    var body = {member_id: m.id, text: text}; if (url) body.url = url;
+    go.disabled = true; setErr('mFamilyErr', '');
+    api('POST', '/wish/extra' + tq(), body).then(function(){ toast('Added'); return loadFamily(); },
+      function(err){ go.disabled = false; setErr('mFamilyErr', err.message); });
+  };
+  t.onkeydown = function(e){ if (e.key === 'Enter') go.click(); };
+  open.onclick = function(){ f.hidden = !f.hidden; if (!f.hidden) t.focus(); };
+  f.appendChild(t); f.appendChild(u); f.appendChild(go);
+  wrap.appendChild(open); wrap.appendChild(f);
+  return wrap;
 }
 
 // my wishes: each row keeps its server id on the element; autosave PUTs the full list
@@ -984,11 +1310,19 @@ function addWishRow(w){
   t.setAttribute('aria-label', 'Wish');
   var u = el('input'); u.type = 'url'; u.id = 'wUrl-' + n; u.placeholder = 'Link (optional)'; u.value = (w && w.url) || '';
   u.setAttribute('aria-label', 'Link'); u.autocapitalize = 'off';
-  f.appendChild(t); f.appendChild(u);
+  var pv = el('div', 'wish-pv'); pv.id = 'wPv-' + n;
+  u.addEventListener('input', function(){ pv.textContent = ''; pv.hidden = true; });   // stale once the link changes
+  f.appendChild(t); f.appendChild(u); f.appendChild(pv);
+  setRowPreview(row, w, pv);
   var x = btn('wDel-' + n, '×', 'x'); x.setAttribute('aria-label', 'Remove wish'); x.style.height = '46px';
   x.onclick = function(){ row.remove(); if (!$('mWishes').children.length) addWishRow(null); updateAddBtn(); queueSave(); };
   row.appendChild(f); row.appendChild(x); $('mWishes').appendChild(row);
   return t;
+}
+function setRowPreview(row, w, pv){
+  pv = pv || row.querySelector('.wish-pv'); if (!pv) return;
+  var v = w ? wishView(w, {editor: true}) : null;
+  pv.textContent = ''; if (v) pv.appendChild(v); pv.hidden = !v;
 }
 function updateAddBtn(){ $('mAddWish').disabled = $('mWishes').children.length >= MAX_WISHES; }
 function collectWishes(){
@@ -1010,7 +1344,7 @@ function saveWishes(){
   M.saving = true; setErr('mWishErr', '');
   api('PUT', '/me/wishes?t=' + encodeURIComponent(M.token), c.list).then(function(saved){
     saved = Array.isArray(saved) ? saved : [];
-    c.rows.forEach(function(row, i){ if (saved[i] && saved[i].id) row.dataset.id = saved[i].id; });
+    c.rows.forEach(function(row, i){ if (saved[i] && saved[i].id) row.dataset.id = saved[i].id; setRowPreview(row, saved[i]); });
     M.data.me.wishes = saved;
     M.lastSaved = JSON.stringify(collectWishes().list);
     toast('Saved');
@@ -1131,11 +1465,11 @@ function adminAction(id, path, ask, okMsg){
 // ---------- routing + boot ----------
 function route(){
   var h = location.hash.replace(/^#/, '');
-  var kind = h.charAt(0).toLowerCase(), token = h.slice(1), demo = h.match(/^demo-([a-z]+)$/i);
+  var kind = h.charAt(0).toLowerCase(), token = h.slice(1).split('/')[0], fam = /\/family$/i.test(h), demo = h.match(/^demo-([a-z]+)(\/family)?$/i);
   show('setup', false); show('member', false); show('admin', false);
   clearTheme(); DEMO = false;
-  if (demo){ show('member', true); showDemo(lc(demo[1])); }
-  else if (kind === 'r'){ show('member', true); showMember(token); }
+  if (demo){ show('member', true); showDemo(lc(demo[1]), fam); }
+  else if (kind === 'r'){ show('member', true); showMember(token, fam); }
   else if (kind === 'a' && token){ show('admin', true); showAdmin(token); }
   else { show('setup', true); showSetup(); }
   window.scrollTo(0, 0);
@@ -1156,7 +1490,13 @@ function route(){
     if (v) location.hash = 'r' + v;
   };
   $('mAskGo').onclick = sendQuestion;
-  $('mConfirm').onclick = toggleConfirm;
+  $('mConfirm').onclick = onConfirmTap;
+  $('mPickList').addEventListener('change', function(){ syncPick(); if (pickedOpt() && pickedOpt().value === '') $('mPickNote').focus(); });
+  $('mPickNote').onkeydown = function(e){ if (e.key === 'Enter') sendPick(); };
+  $('mPickGo').onclick = sendPick;
+  $('mPickCancel').onclick = function(){ closePick(); $('mConfirm').focus(); };
+  $('mFamilyBtn').onclick = toggleFamily;
+  $('mFamilyRefresh').onclick = function(){ loadFamily().then(function(){ if (!$('mFamilyErr').textContent) toast('Up to date'); }); };
   $('mAddWish').onclick = function(){
     if ($('mWishes').children.length >= MAX_WISHES) return;
     addWishRow(null).focus(); updateAddBtn();
