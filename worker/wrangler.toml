@@ -2,6 +2,9 @@ name = "tomlin-draw"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
 
+[assets]
+directory = "./assets"   # gitignored: photos + cutouts live only on the Mini and in the deployed Worker
+
 [vars]
 PAGES_ORIGIN = "https://krakentoolbar.github.io"
 
