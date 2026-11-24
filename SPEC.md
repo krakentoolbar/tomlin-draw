@@ -221,7 +221,7 @@ Rules: idempotent (an `outbox` row per member+kind+date, insert-ignore); quiet h
 
 1. Phone numbers for the 7 (entered in the app, never in the repo). Who, if anyone, should get links by hand instead?
 2. Exchange date (Dec 25?) and budget.
-3. Reminder cadence above OK, or lighter? Texts come from JJ's number, so JJ eats any blowback.
+3. ~~Reminder cadence above OK, or lighter?~~ **Approved by JJ 2026-11-24 as written in §8.**
 4. Confirm the nickname mapping in §5 (matters only for the no-repeat rule).
 5. OK to retire the v1 links the moment M1 ships (nobody has been sent one yet, so yes unless JJ already texted).
 
