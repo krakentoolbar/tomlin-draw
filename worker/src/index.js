@@ -209,9 +209,14 @@ export function previewFromHtml(html, url) {
   if (!title) { const t = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i); if (t) title = decodeEntities(t[1]); }
   let image = meta['og:image:secure_url'] || meta['og:image'] || meta['twitter:image'] || null;
   if (!image && isAmazon(host)) {
-    const m = html.match(/data-old-hires="(https?:[^"]+)"/i) || html.match(/"hiRes":"(https?:[^"]+)"/) || html.match(/"large":"(https?:[^"]+)"/);
+    const m = html.match(/data-old-hires="(https?:[^"]+)"/i)
+      || html.match(/data-midres-replacement="(https?:\/\/m\.media-amazon\.com\/images\/I\/[^"]+)"/i)   // mobile PDP main image
+      || html.match(/<img\b[^>]*alt="[^"]*View media content[^"]*"[^>]*src="(https?:\/\/m\.media-amazon\.com\/images\/I\/[^"]+)"/i)
+      || html.match(/"hiRes":"(https?:[^"]+)"/) || html.match(/"large":"(https?:[^"]+)"/);
     if (m) image = m[1];
   }
+  // Amazon image URLs carry a size modifier (…/I/<id>._AC_UF350,350_QL50_.jpg); stripping it gives the full-size image.
+  if (image && /media-amazon\.com\/images\/I\//.test(image)) image = image.replace(/\._[^/]*_\.(jpe?g|png)$/i, '.$1');
   if (!image) {
     const tag = (html.match(/<img\b[^>]*\bid=["']?landingImage\b[^>]*>/i) || [])[0];
     if (tag) image = attrs(tag).src || null;
