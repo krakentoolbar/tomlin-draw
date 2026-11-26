@@ -170,13 +170,16 @@ if (sqlite) {
     assert.equal(me.me.name, 'Sonja');
     assert.ok(me.receiver.name && me.group.days_left >= 0 && me.all_pairs === undefined);
 
-    const w1 = await call('PUT', `/me/wishes?t=${tok.Sonja}`, [{ text: 'Socks' }, { text: 'Book', url: 'amazon.com/x' }]);
+    const w1 = await call('PUT', `/me/wishes?t=${tok.Sonja}`, [{ text: 'Socks', url: 'https://example.com/socks' }, { text: 'Book', url: 'amazon.com/x' }]);
     assert.equal(w1.data.wishes.length, 2);
     assert.equal(w1.data.wishes[1].url, 'https://amazon.com/x');
-    const w2 = await call('PUT', `/me/wishes?t=${tok.Sonja}`, [{ id: w1.data.wishes[0].id, text: 'Wool socks' }, { text: 'Candle' }]);
+    const w2 = await call('PUT', `/me/wishes?t=${tok.Sonja}`, [{ id: w1.data.wishes[0].id, text: 'Wool socks', url: 'https://example.com/socks' }, { text: 'Candle', url: 'https://example.com/candle' }]);
     assert.deepEqual(w2.data.wishes.map(w => w.text), ['Wool socks', 'Candle']);
     assert.equal(w2.data.wishes[0].id, w1.data.wishes[0].id);
-    assert.equal((await call('PUT', `/me/wishes?t=${tok.Sonja}`, Array(31).fill({ text: 'x' }))).status, 400);
+    assert.equal((await call('PUT', `/me/wishes?t=${tok.Sonja}`, Array(31).fill({ text: 'x', url: 'https://example.com/x' }))).status, 400);
+    assert.equal((await call('PUT', `/me/wishes?t=${tok.Sonja}`, [{ text: 'no link' }])).status, 400, 'a wish needs a link');
+    assert.equal((await call('PUT', `/me/wishes?t=${tok.Sonja}`, [{ url: 'https://example.com/only' }])).data.wishes.length, 1, 'link alone is a wish');
+    await call('PUT', `/me/wishes?t=${tok.Sonja}`, [{ id: w1.data.wishes[0].id, text: 'Wool socks', url: 'https://example.com/socks' }, { text: 'Candle', url: 'https://example.com/candle' }]);
     const santaView = (await call('GET', `/me?t=${tok[santaOfSonja]}`)).data;
     assert.deepEqual(santaView.receiver.wishes.map(w => w.text), ['Wool socks', 'Candle']);
 
@@ -264,7 +267,7 @@ if (sqlite) {
 
     // Owner saves a list; the Worker previews the Amazon link, the blocked one waits for Banjo.
     const put = (await call('PUT', `/me/wishes?t=${tok[R]}`, [
-      { text: 'Socks' }, { text: 'Headphones', url: 'https://www.amazon.com/dp/B0TEST' }, { text: 'Lamp', url: 'https://blocked.example/lamp' }
+      { text: 'Socks', url: 'https://example.com/socks' }, { text: 'Headphones', url: 'https://www.amazon.com/dp/B0TEST' }, { text: 'Lamp', url: 'https://blocked.example/lamp' }
     ])).data.wishes;
     const id = Object.fromEntries(put.map(w => [w.text, w.id]));
     assert.ok(fetched.some(f => f.url === 'https://www.amazon.com/dp/B0TEST' && /iPhone/.test(f.ua)));
@@ -274,7 +277,7 @@ if (sqlite) {
     assert.equal(wishBy(own, 'Lamp').preview_title, null);
     const st = w => db.prepare('SELECT preview_status s, preview_tried t FROM wishes WHERE id = ?').get(id[w]);
     assert.deepEqual({ ...st('Lamp') }, { s: 'pending', t: 1 });
-    assert.deepEqual({ ...st('Socks') }, { s: null, t: 0 });
+    assert.deepEqual({ ...st('Socks') }, { s: 'pending', t: 1 });   // every wish has a link now, so every wish gets a preview attempt
 
     // Santa confirms a list item: hidden from the owner, "their Santa" to everyone else.
     const c1 = await call('POST', `/me/confirm?t=${tok[S]}`, { wish_id: id.Socks });
@@ -385,9 +388,10 @@ if (sqlite) {
     }
     assert.equal(db.prepare('SELECT preview_status s FROM wishes WHERE id = ?').get(mug).s, 'failed');
     assert.ok(!(await call('GET', '/banjo/previews', undefined, { 'X-Banjo-Key': 'k' })).data.some(r => r.wish_id === mug));
-    // No url -> no preview state; clearing a url clears it.
-    await call('PUT', `/me/wishes?t=${tok[X]}`, [{ id: mug, text: 'Mug' }]);
-    assert.equal(db.prepare('SELECT preview_status s FROM wishes WHERE id = ?').get(mug).s, null);
+    // Links are mandatory now: dropping the url is rejected; changing it resets the preview state.
+    assert.equal((await call('PUT', `/me/wishes?t=${tok[X]}`, [{ id: mug, text: 'Mug' }])).status, 400);
+    await call('PUT', `/me/wishes?t=${tok[X]}`, [{ id: mug, text: 'Mug', url: 'https://blocked.example/mug2' }]);
+    assert.equal(db.prepare('SELECT preview_status s FROM wishes WHERE id = ?').get(mug).s, 'pending');
   });
 
   await test('migration 001 applies cleanly to the old schema', () => {

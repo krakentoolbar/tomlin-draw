@@ -58,7 +58,6 @@ All files come from Wikimedia Commons under CC0, Public Domain, CC BY or CC BY-S
 |---|---|---|---|---|
 | `wall.jpg` | Russia. Moscow Region. Winter pine wood, lake Kratovskoe area.JPG | Aleks G | CC BY-SA 3.0 | https://commons.wikimedia.org/wiki/File:Russia._Moscow_Region._Winter_pine_wood,_lake_Kratovskoe_area.JPG |
 | `rory.png` | Rory McIlroy watches drive flight (portrait orientation).jpg | TourProGolfClubs | CC BY 2.0 | https://commons.wikimedia.org/wiki/File:Rory_McIlroy_watches_drive_flight_(portrait_orientation).jpg |
-| `sugarloaf.jpg` | Sugarloaf Mountain seen from Maine State Route 27.JPG | ThePessimus | Public domain | https://commons.wikimedia.org/wiki/File:Sugarloaf_Mountain_seen_from_Maine_State_Route_27.JPG |
 | `grizzly.png` | Grizzly Bear (Ursus arctos ssp.).jpg | Gregory "Slobirdr" Smith | CC BY-SA 2.0 | https://commons.wikimedia.org/wiki/File:Grizzly_Bear_(Ursus_arctos_ssp.).jpg |
 | `mint.png` | Mint leaves (Mentha spicata).jpg | Commonists | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Mint_leaves_(Mentha_spicata).jpg |
 | `golfball.jpg` | 2020s Partille Golfklubb Range XOne golf ball green.jpg | R. Henrik Nilsson | CC BY 4.0 | https://commons.wikimedia.org/wiki/File:2020s_Partille_Golfklubb_Range_XOne_golf_ball_green.jpg |

@@ -126,7 +126,12 @@ export function answerBody(link) { return `Your giftee answered: ${link}`; }
 
 export function normalizePhone(v) {
   if (v == null || String(v).trim() === '') return null;
-  let s = String(v).replace(/[^\d+]/g, '');
+  const raw = String(v).trim();
+  if (raw.includes('@')) {   // iMessage email handle (iCloud / Apple ID), used as-is by Messages.app
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) fail(400, `"${v}" doesn't look like an iMessage email.`);
+    return raw.toLowerCase();
+  }
+  let s = raw.replace(/[^\d+]/g, '');
   if (/^\d{10}$/.test(s)) s = '+1' + s;
   else if (/^1\d{10}$/.test(s)) s = '+' + s;
   if (!/^\+\d{10,15}$/.test(s)) fail(400, `"${v}" doesn't look like a phone number.`);
@@ -548,11 +553,11 @@ async function putWishes(c) {
   const list = c.body;
   if (!Array.isArray(list)) fail(400, 'Send the wish list as an array.');
   if (list.length > MAX_WISHES) fail(400, `Max ${MAX_WISHES} wishes.`);
-  const rows = list.map(w => ({
-    id: w && typeof w.id === 'string' ? w.id : null,
-    text: text(w && w.text, 300, 'Wish') || fail(400, 'Every wish needs a description.'),
-    url: cleanUrl(w && w.url)
-  }));
+  const rows = list.map(w => {
+    const url = cleanUrl(w && w.url) || fail(400, 'Every wish needs a link. Paste the product page.');
+    if (!isPublicUrl(url)) fail(400, 'That link doesn\'t look right. Paste the full product page, like https://www.amazon.com/...');
+    return { id: w && typeof w.id === 'string' ? w.id : null, text: text(w && w.text, 300, 'Note') || '', url };
+  });
   const existing = await wishesOf(env, m.id);
   const byId = new Map(existing.map(w => [w.id, w]));
   const keep = new Set();

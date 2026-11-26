@@ -277,6 +277,7 @@ a.wv-t{text-decoration:underline;text-decoration-color:var(--accent);text-underl
 [data-collage][data-person="sarah"] .card{background:linear-gradient(160deg,rgba(255,255,255,.93),rgba(255,234,244,.93) 60%,rgba(230,251,249,.93)) padding-box,linear-gradient(135deg,#ff2d95,#d4a537,#13c4bc) border-box}
 [data-collage][data-person="sonja"] .card{background:radial-gradient(circle at 50% 20%,rgba(36,26,46,.88),rgba(18,12,24,.86) 70%)}
 [data-collage][data-person="jj"] .card{background:linear-gradient(180deg,rgba(26,47,102,.86),rgba(15,29,61,.86))}
+.wish-row input.wish-url{border-width:2px;border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -423,7 +424,7 @@ a.wv-t{text-decoration:underline;text-decoration-color:var(--accent);text-underl
 
     <section>
       <h2>My wish list</h2>
-      <p class="hint" style="margin-bottom:10px">Whoever drew you sees this. Add a thing and an optional link. Saves on its own.</p>
+      <p class="hint" style="margin-bottom:10px">Whoever drew you sees this. Paste a link to each thing you want (Amazon, Target, anywhere). Add a note if it helps. Saves on its own.</p>
       <div class="wishes" id="mWishes"></div>
       <div class="row" style="margin-top:10px"><button type="button" class="small" id="mAddWish">+ Add a wish</button></div>
       <div id="mWishErr" class="err" hidden></div>
@@ -594,7 +595,7 @@ function addName(name, phone){
   var row = el('div', 'name-row');
   var inp = el('input'); inp.type = 'text'; inp.value = name || ''; inp.placeholder = 'Name'; inp.id = 'name-' + n;
   inp.setAttribute('aria-label', 'Name');
-  var ph = el('input'); ph.type = 'tel'; ph.value = phone || ''; ph.placeholder = 'Phone (optional)'; ph.id = 'phone-' + n;
+  var ph = el('input'); ph.type = 'text'; ph.value = phone || ''; ph.placeholder = 'Phone or iMessage email (optional)'; ph.autocapitalize = 'off'; ph.id = 'phone-' + n;
   ph.setAttribute('aria-label', 'Phone'); ph.autocomplete = 'off';
   ph.onblur = function(){ ph.value = fmtPhone(ph.value); };
   var x = btn('remove-' + n, '×', 'x'); x.setAttribute('aria-label', 'Remove');
@@ -1306,13 +1307,14 @@ function addWishRow(w){
   var n = ++M.wishSeq;
   var row = el('div', 'wish-row'); row.dataset.id = (w && w.id) || '';
   var f = el('div', 'f');
-  var t = el('input'); t.type = 'text'; t.id = 'wText-' + n; t.placeholder = 'A thing you\'d like'; t.maxLength = 200; t.value = (w && w.text) || '';
-  t.setAttribute('aria-label', 'Wish');
-  var u = el('input'); u.type = 'url'; u.id = 'wUrl-' + n; u.placeholder = 'Link (optional)'; u.value = (w && w.url) || '';
-  u.setAttribute('aria-label', 'Link'); u.autocapitalize = 'off';
+  // link first and required: the product page IS the wish; the note is optional (size, color, which one)
+  var u = el('input'); u.type = 'url'; u.id = 'wUrl-' + n; u.placeholder = 'Paste the link (Amazon, Target, anywhere)'; u.value = (w && w.url) || '';
+  u.setAttribute('aria-label', 'Link'); u.autocapitalize = 'off'; u.required = true; u.className = 'wish-url';
+  var t = el('input'); t.type = 'text'; t.id = 'wText-' + n; t.placeholder = 'Note (optional): size, color, which one'; t.maxLength = 200; t.value = (w && w.text) || '';
+  t.setAttribute('aria-label', 'Note');
   var pv = el('div', 'wish-pv'); pv.id = 'wPv-' + n;
   u.addEventListener('input', function(){ pv.textContent = ''; pv.hidden = true; });   // stale once the link changes
-  f.appendChild(t); f.appendChild(u); f.appendChild(pv);
+  f.appendChild(u); f.appendChild(pv); f.appendChild(t);
   setRowPreview(row, w, pv);
   var x = btn('wDel-' + n, '×', 'x'); x.setAttribute('aria-label', 'Remove wish'); x.style.height = '46px';
   x.onclick = function(){ row.remove(); if (!$('mWishes').children.length) addWishRow(null); updateAddBtn(); queueSave(); };
@@ -1326,22 +1328,23 @@ function setRowPreview(row, w, pv){
 }
 function updateAddBtn(){ $('mAddWish').disabled = $('mWishes').children.length >= MAX_WISHES; }
 function collectWishes(){
-  var list = [], rows = [];
+  var list = [], rows = [], missing = 0;
   Array.prototype.forEach.call($('mWishes').children, function(row){
-    var ins = row.querySelectorAll('input'), text = ins[0].value.trim(), url = ins[1].value.trim();
-    if (!url && looksLikeUrl(text)) url = text;           // pasted a bare URL into the thing box
-    if (!text && !url) return;
-    var w = {text: text || url}; if (url) w.url = url; if (row.dataset.id) w.id = row.dataset.id;
+    var url = row.querySelector('input[type=url]').value.trim(), text = row.querySelector('input[type=text]').value.trim();
+    if (!url && looksLikeUrl(text)){ url = text; text = ''; }   // pasted the link into the note box
+    if (!url){ if (text) missing++; return; }                  // a note without a link isn't a wish yet
+    var w = {url: url, text: text}; if (row.dataset.id) w.id = row.dataset.id;
     list.push(w); rows.push(row);
   });
-  return {list: list, rows: rows};
+  return {list: list, rows: rows, missing: missing};
 }
 function queueSave(){ clearTimeout(M.saveT); M.saveT = setTimeout(saveWishes, 400); }
 function saveWishes(){
   if (M.saving){ M.again = true; return; }
   var c = collectWishes(), key = JSON.stringify(c.list);
+  setErr('mWishErr', c.missing ? 'Every wish needs a link. Paste the product page and it saves on its own.' : '');
   if (key === M.lastSaved) return;
-  M.saving = true; setErr('mWishErr', '');
+  M.saving = true;
   api('PUT', '/me/wishes?t=' + encodeURIComponent(M.token), c.list).then(function(saved){
     saved = Array.isArray(saved) ? saved : [];
     c.rows.forEach(function(row, i){ if (saved[i] && saved[i].id) row.dataset.id = saved[i].id; setRowPreview(row, saved[i]); });
@@ -1437,7 +1440,7 @@ function memberCard(m){
   c.appendChild(row);
 
   var edit = el('div', 'edit'); edit.hidden = true;
-  var ph = el('input'); ph.type = 'tel'; ph.id = 'aPhone-' + m.id; ph.value = m.phone || ''; ph.placeholder = 'Phone'; ph.setAttribute('aria-label', 'Phone for ' + m.name);
+  var ph = el('input'); ph.type = 'text'; ph.id = 'aPhone-' + m.id; ph.value = m.phone || ''; ph.placeholder = 'Phone or iMessage email'; ph.autocapitalize = 'off'; ph.setAttribute('aria-label', 'Phone for ' + m.name);
   ph.onblur = function(){ ph.value = fmtPhone(ph.value); };
   var sv = btn('aSave-' + m.id, 'Save');
   sv.onclick = function(){
