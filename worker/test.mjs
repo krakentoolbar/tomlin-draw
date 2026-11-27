@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import worker, {
   drawNames, firstName, reminderDates, ctAt, ctDate, ctOffsetMinutes, clampQuiet, addDays,
-  randomToken, inviteBody, reminderBody, normalizePhone, scheduleReminders, previewFromHtml, isPublicUrl
+  randomToken, inviteBody, reminderBody, wishNudgeBody, normalizePhone, scheduleReminders, previewFromHtml, isPublicUrl
 } from './src/index.js';
 
 let passed = 0;
@@ -69,9 +69,13 @@ await test('quiet hours clamp to 9a CT', () => {
 await test('tokens, bodies, phones', () => {
   assert.match(randomToken(24), /^[A-Za-z0-9]{24}$/);
   assert.match(randomToken(12), /^[A-Za-z0-9]{12}$/);
-  assert.equal(inviteBody('Hewitt', 'L'), "Hewitt, Tomlin Christmas draw is in. Tap to see who you got (don't share): L");
-  assert.equal(reminderBody('Sonja', 10, 'L'), 'Sonja, friendly nudge: 10 days to Christmas. Tap "I bought it" once you\'re done: L');
-  assert.match(reminderBody('Sonja', 1, 'L'), /^Sonja, last call: 1 day to/);
+  assert.match(inviteBody('Hewitt', 'L'), /^Hewitt\. Banjo here, JJ's raccoon\. .*Don't share it: L$/);
+  assert.match(reminderBody('Sonja', 10, 'L'), /^Sonja\. 10 days\. .*: L$/);
+  assert.match(reminderBody('Sonja', 2, 'L'), /Last call/);
+  assert.match(reminderBody('Sonja', 1, 'L'), /^Sonja, it's tomorrow\./);
+  assert.match(reminderBody('Sonja', 99, 'L'), /^Sonja\. Banjo here, JJ's raccoon\. 99 days to Christmas/);
+  assert.notEqual(wishNudgeBody('Sonja', 'L', 24), wishNudgeBody('Sonja', 'L', 19));
+  for (const d of [24, 17, 10, 7, 5, 3, 2, 1]) assert.ok(reminderBody('Hewitt', d, 'L').length < 220, 'reminder ' + d + ' too long');
   assert.equal(normalizePhone('(615) 555-0100'), '+16155550100');
   assert.equal(normalizePhone(''), null);
   assert.throws(() => normalizePhone('123'));
@@ -222,15 +226,20 @@ if (sqlite) {
 
     assert.equal((await call('GET', '/banjo/due')).status, 401);
     const due = (await call('GET', '/banjo/due', undefined, { 'X-Banjo-Key': 'k' })).data;
-    assert.ok(due.length >= 1 && due.length <= 20);
+    // Invites are clamped to 9a-9p CT, so during quiet hours (real wall clock) nothing is due yet.
+    const ctHour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', hour: 'numeric', hour12: false }).format(new Date()));
+    const quiet = ctHour < 9 || ctHour >= 21;
+    assert.ok(quiet ? due.length === 0 : (due.length >= 1 && due.length <= 20));
     assert.ok(due.every(r => r.phone && r.body && r.outbox_id && r.kind !== 'reminder'));
-    const ack = (await call('POST', '/banjo/sent', { ids: due.map(r => r.outbox_id) }, { 'X-Banjo-Key': 'k' })).data;
-    assert.equal(ack.updated, due.length);
+    if (!quiet) {
+      const ack = (await call('POST', '/banjo/sent', { ids: due.map(r => r.outbox_id) }, { 'X-Banjo-Key': 'k' })).data;
+      assert.equal(ack.updated, due.length);
+    }
 
     const adm = (await call('GET', `/admin?a=${a}`)).data;
     assert.equal(adm.assignments, undefined);
     assert.equal(adm.members.length, 7);
-    assert.ok(adm.members.find(m => m.name === 'JJ').last_text);
+    if (!quiet) assert.ok(adm.members.find(m => m.name === 'JJ').last_text);
     assert.equal(adm.can_redraw, true);
 
     assert.equal((await call('POST', `/admin/redraw?a=${a}`)).status, 200);

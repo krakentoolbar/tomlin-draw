@@ -109,20 +109,33 @@ export function reminderDates(exchangeDate) {
   };
 }
 
+// Text copy. Every text is from Banjo, JJ's raccoon: dry, deadpan, short. (JJ, 2026-11-27)
 export function inviteBody(name, link) {
-  return `${name}, Tomlin Christmas draw is in. Tap to see who you got (don't share): ${link}`;
+  return `${name}. Banjo here, JJ's raccoon. I ran the Tomlin Christmas draw and nobody stopped me. Your person is inside. Don't share it: ${link}`;
 }
+const REMINDER_LINES = {
+  24: (n, l) => `${n}. Banjo here, JJ's raccoon. 24 days to Christmas. No pressure. I'm just a raccoon with a spreadsheet. Tap "I bought it" once it's handled: ${l}`,
+  17: (n, l) => `${n}, 17 days out. I'd shop for you myself but I have no thumbs and a credit history the bank describes as "raccoon." Tap "I bought it" when it's done: ${l}`,
+  10: (n, l) => `${n}. 10 days. Still double digits, technically. The list is right here and I check it more than is healthy: ${l}`,
+  7: (n, l) => `${n}, one week. I've stared at this spreadsheet so long it started staring back. Tap "I bought it" and free us both: ${l}`,
+  5: (n, l) => `${n}. 5 days. Not saying panic. Just saying I'm a raccoon and even I'd have bought something by now: ${l}`,
+  3: (n, l) => `${n}, 3 days. Amazon Prime still works. I checked. Twice. Tap "I bought it" when it's handled: ${l}`,
+  2: (n, l) => `${n}. 2 days. Last call. The reindeer are stretching. Tap "I bought it" or I have to tell JJ, and he'll make the face: ${l}`,
+  1: (n, l) => `${n}, it's tomorrow. I'm a raccoon and I still know what day it is. Tap "I bought it" and I'll leave you alone until next year: ${l}`
+};
 export function reminderBody(name, days, link) {
+  const line = REMINDER_LINES[days];
+  if (line) return line(name, link);
   const d = days === 1 ? '1 day' : days + ' days';
-  if (days <= 2) return `${name}, last call: ${d} to Christmas. Tap "I bought it" once you're done: ${link}`;
-  return `${name}, friendly nudge: ${d} to Christmas. Tap "I bought it" once you're done: ${link}`;
+  return `${name}. Banjo here, JJ's raccoon. ${d} to Christmas. Tap "I bought it" once it's handled: ${link}`;
 }
-export function wishNudgeBody(name, link) {
-  return `${name}, add 3 things to your wish list so your Santa isn't guessing: ${link}`;
+export function wishNudgeBody(name, link, days = 24) {
+  if (days < 24) return `${name}, your list is still empty. Somewhere your Santa is standing in a store, alone, holding a candle. Paste 3 links and end this: ${link}`;
+  return `${name}. Banjo, JJ's raccoon. Your wish list is empty. Your Santa is guessing, and guessing is how people end up with candles. Paste 3 links: ${link}`;
 }
-export function newWishBody(link) { return `Your person added to their wish list: ${link}`; }
-export function questionBody(link) { return `Your Secret Santa has a question for you: ${link}`; }
-export function answerBody(link) { return `Your giftee answered: ${link}`; }
+export function newWishBody(link) { return `Your person added to their wish list. I'd peek. I'm a raccoon, peeking is the whole job: ${link}`; }
+export function questionBody(link) { return `Your Secret Santa has a question for you. I'm just the raccoon carrying the mail: ${link}`; }
+export function answerBody(link) { return `Your giftee answered. I did not read it. Raccoon of honor: ${link}`; }
 
 export function normalizePhone(v) {
   if (v == null || String(v).trim() === '') return null;
@@ -401,7 +414,7 @@ export async function scheduleReminders(db, now, origin = 'https://krakentoolbar
       if (!m.confirmed_at) for (const r of plan.reminder.filter(usable))
         stmts.push(outboxStmt(env, m, 'reminder', reminderBody(m.name, r.days, link), ctAt(r.date, 10), r.date));
       if (!m.wish_count) for (const r of plan.wish_nudge.filter(usable))
-        stmts.push(outboxStmt(env, m, 'wish_nudge', wishNudgeBody(m.name, link), ctAt(r.date, 10), r.date));
+        stmts.push(outboxStmt(env, m, 'wish_nudge', wishNudgeBody(m.name, link, r.days), ctAt(r.date, 10), r.date));
     }
   }
   for (let i = 0; i < stmts.length; i += 50) await batch(env, stmts.slice(i, i + 50));

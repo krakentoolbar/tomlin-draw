@@ -148,7 +148,7 @@ Auth is the token in the query string. Member token = `t`, admin token = `a`, Ba
 | POST | `/me/reveal?t=` | member | sets `revealed_at`. |
 | PUT | `/me/wishes?t=` | member | body `[{id?, text, url?}]`, full replace (soft-delete missing). Queues `new_wish` to their Santa (dedupe: at most one per Santa per 24h, due next cron). |
 | POST | `/me/confirm?t=` · DELETE same | member | set / clear `confirmed_at`. Confirm cancels any unsent `reminder` rows for that member. |
-| POST | `/me/question?t=` | member | body `{text}` → messages(kind=question, to=receiver). Queues `question` text to receiver: "Your Secret Santa has a question, open your link." |
+| POST | `/me/question?t=` | member | body `{text}` → messages(kind=question, to=receiver). Queues `question` text to receiver (Banjo voice, see §texts). |
 | POST | `/me/answer?t=` | member | body `{message_id, text}` → messages(kind=answer, to=asker). Queues `answer` text. |
 | GET | `/admin?a=` | organizer | full state: members with phone, link, opened/revealed/confirmed, wish counts, last text sent, outbox pending. Assignments only if `?spoilers=1`. |
 | PUT | `/admin/member/:id?a=` | organizer | `{phone, name}`. |
@@ -190,11 +190,11 @@ Table: name · phone · opened · revealed · wishes · bought · last text. Row
 
 | Kind | When (CT, 10:00 unless noted) | Condition | Body |
 |---|---|---|---|
-| invite | immediately at draw | has phone | `{Name}, Tomlin Christmas draw is in. Tap to see who you got (don't share): {link}` |
-| wish_nudge | Dec 1, Dec 6 | own wish list empty | `{Name}, add 3 things to your wish list so your Santa isn't guessing: {link}` |
-| reminder | Dec 1, 8, 15, 18, 20, 22, 23, 24 | not confirmed | `{Name}, friendly nudge: {days} days to Christmas. Tap "I bought it" once you're done: {link}` (last two: "last call") |
+| invite | immediately at draw | has phone | `{Name}. Banjo here, JJ's raccoon. I ran the Tomlin Christmas draw and nobody stopped me. Your person is inside. Don't share it: {link}` |
+| wish_nudge | Dec 1, Dec 6 | own wish list empty | Dec 1: `{Name}. Banjo, JJ's raccoon. Your wish list is empty. Your Santa is guessing, and guessing is how people end up with candles. Paste 3 links: {link}` / Dec 6: `...Somewhere your Santa is standing in a store, alone, holding a candle...` |
+| reminder | Dec 1, 8, 15, 18, 20, 22, 23, 24 | not confirmed | one distinct Banjo line per day (`REMINDER_LINES` in index.js, keyed by days-left 24/17/10/7/5/3/2/1), dry Chris Pratt deadpan, all end `Tap "I bought it"...: {link}` or the link |
 | new_wish | next cron tick, max 1 per Santa per 24h | giftee added a wish | `Your person added to their wish list: {link}` |
-| question / answer | next cron tick | message created | `Your Secret Santa has a question for you: {link}` / `Your giftee answered: {link}` |
+| question / answer | next cron tick | message created | `Your Secret Santa has a question for you. I'm just the raccoon carrying the mail: {link}` / `Your giftee answered. I did not read it. Raccoon of honor: {link}` |
 | resend | now | organizer clicked | same as invite |
 
 Rules: idempotent (an `outbox` row per member+kind+date, insert-ignore); quiet hours 9p–9a CT (due_at is clamped to 9a); confirm deletes unsent reminders; if `exchange_date` passes, nothing more is scheduled. Dates above assume Dec 25; derive as `exchange_date − N` so a Dec 24 exchange still works.
